@@ -6,6 +6,9 @@
   "scripts": {
     "lint-js": "node ./node_modules/eslint/bin/eslint.js --ext .js . || exit 0"
   },
+  "dependencies": {
+    "harp": "^0.25.0"
+  },
   "devDependencies": {
     "eslint": "^4.15.0",
     "eslint-config-standard": "^11.0.0-beta.0",
