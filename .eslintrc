@@ -1,0 +1,12 @@
+{
+  "extends": "standard",
+
+  "env": {
+    "amd": true
+  },
+
+  "rules": {
+    "semi": ["error", "always"],
+    "padded-blocks": ["off"]
+  }
+}
