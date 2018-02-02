@@ -1,25 +1,25 @@
-var canvas = document.getElementById('canvas');
-var context = canvas.getContext('2d');
-var prevTime;
-var ball;
-var leftBat;
-var rightBat;
-var keys;
-var points;
-var coefficient;
-var fieldRatio;
-var abstractWidth = 16;
-var abstractHeight = 9;
+const canvas = document.getElementById('canvas');
+const context = canvas.getContext('2d');
+let prevTime;
+let ball;
+let leftBat;
+let rightBat;
+let keys;
+let points;
+let coefficient;
+let fieldRatio;
+const abstractWidth = 16;
+const abstractHeight = 9;
 
 initialize();
 
-function initialize () {
+function initialize() {
   ball = {
     x: 0.5 * abstractWidth,
     y: 0.5 * abstractHeight,
     r: 0.02 * abstractWidth,
     v: 80,
-    dir: Math.random() * Math.PI / 2 - Math.PI / 4
+    dir: (Math.random() * Math.PI / 2) - (Math.PI / 4),
   };
 
   leftBat = {
@@ -27,7 +27,7 @@ function initialize () {
     y: 0.5 * abstractHeight,
     v: 25,
     w: 0.03 * abstractWidth,
-    h: 0.3 * abstractHeight
+    h: 0.3 * abstractHeight,
   };
 
   rightBat = {
@@ -35,7 +35,7 @@ function initialize () {
     y: 0.5 * abstractHeight,
     v: 40,
     w: 0.03 * abstractWidth,
-    h: 0.3 * abstractHeight
+    h: 0.3 * abstractHeight,
   };
 
   points = [0, 0];
@@ -50,18 +50,18 @@ function initialize () {
 
   window.addEventListener('resize', resizeCanvas, false);
   resizeCanvas();
-  window.addEventListener('keydown', function (event) {
+  window.addEventListener('keydown', (event) => {
     keys.add(event.keyCode);
   }, false);
-  window.addEventListener('keyup', function (event) {
+  window.addEventListener('keyup', (event) => {
     keys.delete(event.keyCode);
   }, false);
 
   loop();
 }
 
-function resizeCanvas () {
-  var containerSize = { w: window.innerWidth, h: window.innerHeight };
+function resizeCanvas() {
+  const containerSize = { w: window.innerWidth, h: window.innerHeight };
 
   if (containerSize.w < containerSize.h * fieldRatio) {
     canvas.width = containerSize.w - 10;
@@ -72,7 +72,7 @@ function resizeCanvas () {
   }
 }
 
-function loop () {
+function loop() {
   window.requestAnimationFrame(loop);
 
   updateLeftBat();
@@ -91,8 +91,8 @@ function loop () {
   prevTime = new Date();
 }
 
-function updateBall () {
-  var dt = new Date() - prevTime;
+function updateBall() {
+  const dt = new Date() - prevTime;
 
   ball.x += Math.cos(ball.dir) * ball.v * dt * coefficient;
   ball.y += Math.sin(ball.dir) * ball.v * dt * coefficient;
@@ -106,49 +106,48 @@ function updateBall () {
   }
 }
 
-function updateLeftBat () {
-  var dt = new Date() - prevTime;
+function updateLeftBat() {
+  const dt = new Date() - prevTime;
 
-  if (ball.y < leftBat.y - 0.05 && leftBat.y - leftBat.h / 2 > 0) {
+  if (ball.y < leftBat.y - 0.05 && leftBat.y - (leftBat.h / 2) > 0) {
     leftBat.y -= leftBat.v * dt * coefficient;
-  } else if (ball.y > leftBat.y + 0.05 && leftBat.y + leftBat.h / 2 < abstractHeight) {
+  } else if (ball.y > leftBat.y + 0.05 && leftBat.y + (leftBat.h / 2) < abstractHeight) {
     leftBat.y += leftBat.v * dt * coefficient;
   }
 
-  if (leftBat.y - leftBat.h / 2 < 0) {
+  if (leftBat.y - (leftBat.h / 2) < 0) {
     leftBat.y = leftBat.h / 2;
   }
 
-  if (leftBat.y + leftBat.h / 2 > abstractHeight) {
-    leftBat.y = abstractHeight - leftBat.h / 2;
+  if (leftBat.y + (leftBat.h / 2) > abstractHeight) {
+    leftBat.y = abstractHeight - (leftBat.h / 2);
   }
 }
 
-function updateRightBat () {
-  var dt = new Date() - prevTime;
+function updateRightBat() {
+  const dt = new Date() - prevTime;
 
   if (keys.has(38)) {
-    if (rightBat.y - rightBat.h / 2 > 0) {
+    if (rightBat.y - (rightBat.h / 2) > 0) {
       rightBat.y -= rightBat.v * dt * coefficient;
     }
   } else if (keys.has(40)) {
-    if (rightBat.y + rightBat.h / 2 < abstractHeight) {
+    if (rightBat.y + (rightBat.h / 2) < abstractHeight) {
       rightBat.y += rightBat.v * dt * coefficient;
     }
   }
 }
 
-function detectCollision (bat) {
-  var insideX, insideLen, maxDist, dist;
-
-  if (Math.abs(bat.y - ball.y) < bat.h / 2 + ball.r && Math.abs(bat.x - ball.x) < bat.w / 2 + ball.r) {
-    insideX = bat.w / 2 + ball.r - Math.abs(ball.x - bat.x);
-    insideLen = insideX * Math.cos(ball.dir);
+function detectCollision(bat) {
+  if (Math.abs(bat.y - ball.y) < (bat.h / 2) + ball.r
+    && Math.abs(bat.x - ball.x) < (bat.w / 2) + ball.r) {
+    const insideX = (bat.w / 2) + ball.r - Math.abs(ball.x - bat.x);
+    const insideLen = insideX * Math.cos(ball.dir);
 
     ball.x += insideX * (ball.x < bat.x ? -1 : 1);
 
-    maxDist = bat.h / 2 + ball.r;
-    dist = Math.abs(bat.y - ball.y);
+    const maxDist = (bat.h / 2) + ball.r;
+    const dist = Math.abs(bat.y - ball.y);
     ball.dir = dist / maxDist * Math.PI / 4;
 
     if (bat.y > ball.y) {
@@ -163,9 +162,9 @@ function detectCollision (bat) {
   }
 }
 
-function detectPoint () {
+function detectPoint() {
   if (ball.x < -ball.r || ball.x > abstractWidth + ball.r) {
-    ball.dir = Math.random() * Math.PI / 2 - Math.PI / 4;
+    ball.dir = (Math.random() * Math.PI / 2) - (Math.PI / 4);
 
     if (ball.x < ball.r) {
       points[1]++;
@@ -179,7 +178,7 @@ function detectPoint () {
   }
 }
 
-function drawField () {
+function drawField() {
   context.beginPath();
   context.strokeStyle = 'rgba(255, 255, 255, .1)';
   context.setLineDash([canvas.width * 0.04, canvas.width * 0.047]);
@@ -190,33 +189,34 @@ function drawField () {
   context.setLineDash([]);
 
   context.fillStyle = 'rgba(255, 255, 255, .3)';
-  context.textAlign = 'right';
+  context.font = `${canvas.width / 10}px "Lucida Console", Monaco, monospace`;
   context.textBaseline = 'top';
-  context.font = '' + (canvas.width / 10) + 'px "Lucida Console", Monaco, monospace';
-  context.fillText(points[0], canvas.width / 2 - canvas.width * 0.02, canvas.width * 0.02);
+
+  context.textAlign = 'right';
+  context.fillText(points[0], (canvas.width / 2) - (canvas.width * 0.02), canvas.width * 0.02);
 
   context.fillStyle = 'rgba(255, 255, 255, .3)';
   context.textAlign = 'left';
-  context.textBaseline = 'top';
-  context.font = '' + (canvas.width / 10) + 'px "Lucida Console", Monaco, monospace';
-  context.fillText(points[1], canvas.width / 2 + canvas.width * 0.02, canvas.width * 0.02);
+  context.fillText(points[1], (canvas.width / 2) + (canvas.width * 0.02), canvas.width * 0.02);
 }
 
-function drawBall () {
+function drawBall() {
   context.beginPath();
   context.fillStyle = 'yellow';
   context.arc(
     ball.x / abstractWidth * canvas.width,
     ball.y / abstractHeight * canvas.height,
-    canvas.width * ball.r / abstractWidth, 0, Math.PI * 2);
+    canvas.width * ball.r / abstractWidth, 0, Math.PI * 2,
+  );
   context.fill();
 }
 
-function drawBat (bat) {
+function drawBat(bat) {
   context.fillStyle = 'white';
   context.fillRect(
-    bat.x / abstractWidth * canvas.width - bat.w / 2 / abstractWidth * canvas.width,
-    bat.y / abstractHeight * canvas.height - bat.h / 2 / abstractHeight * canvas.height,
+    (bat.x / abstractWidth * canvas.width) - (bat.w / 2 / abstractWidth * canvas.width),
+    (bat.y / abstractHeight * canvas.height) - (bat.h / 2 / abstractHeight * canvas.height),
     bat.w / abstractWidth * canvas.width,
-    bat.h / abstractHeight * canvas.height);
+    bat.h / abstractHeight * canvas.height,
+  );
 }
