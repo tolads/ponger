@@ -1,133 +1,152 @@
-const canvas = document.getElementById('canvas');
-const context = canvas.getContext('2d');
-let prevTime;
-let started = false;
-let playing = false;
-const model = new PongerModel();
+class PongerView {
+  constructor(model) {
+    this.model = model;
+    this.canvas = document.getElementById('canvas');
+    this.context = this.canvas.getContext('2d');
+  }
 
-initialize();
+  init() {
+    this.model.init();
+    this.prevTime = new Date();
+    this.started = false;
+    this.playing = false;
 
-function initialize() {
-  model.init();
+    window.addEventListener('resize', this.resizeCanvas, false);
+    this.resizeCanvas();
 
-  prevTime = new Date();
+    window.addEventListener('keydown', (event) => {
+      this.model.keys.add(event.which);
+    });
+    window.addEventListener('keyup', (event) => {
+      this.model.keys.delete(event.which);
+    });
 
-  window.addEventListener('resize', resizeCanvas, false);
-  resizeCanvas();
-  window.addEventListener('keydown', (event) => {
-    model.keys.add(event.which);
-  });
-  window.addEventListener('keyup', (event) => {
-    model.keys.delete(event.which);
-  });
-  window.addEventListener('keypress', (event) => {
-    if (event.which === 32) {
-      started = true;
-      playing = !playing;
+    window.addEventListener('keypress', (event) => {
+      if (event.which === 32) {
+        this.started = true;
+        this.playing = !this.playing;
+      }
+    });
+    window.addEventListener('blur', () => {
+      this.playing = false;
+    });
+
+    this.loop();
+  }
+
+  resizeCanvas() {
+    const containerSize = { w: window.innerWidth, h: window.innerHeight };
+    const fieldRatio = this.model.abstractWidth / this.model.abstractHeight;
+
+    if (containerSize.w < containerSize.h * fieldRatio) {
+      this.canvas.width = containerSize.w - 10;
+      this.canvas.height = (containerSize.w - 10) / fieldRatio;
+    } else {
+      this.canvas.width = (containerSize.h - 10) * fieldRatio;
+      this.canvas.height = containerSize.h - 10;
     }
-  });
-  window.addEventListener('blur', () => {
-    playing = false;
-  });
+  }
 
-  loop();
-}
+  loop() {
+    window.requestAnimationFrame(() => { this.loop(); });
 
-function resizeCanvas() {
-  const containerSize = { w: window.innerWidth, h: window.innerHeight };
-  const fieldRatio = model.abstractWidth / model.abstractHeight;
+    if (this.playing) {
+      const dt = new Date() - this.prevTime;
 
-  if (containerSize.w < containerSize.h * fieldRatio) {
-    canvas.width = containerSize.w - 10;
-    canvas.height = (containerSize.w - 10) / fieldRatio;
-  } else {
-    canvas.width = (containerSize.h - 10) * fieldRatio;
-    canvas.height = containerSize.h - 10;
+      this.model.updateLeftBat(dt);
+      this.model.updateRightBat(dt);
+      this.model.updateBall(dt);
+      this.model.detectCollision(this.model.leftBat);
+      this.model.detectCollision(this.model.rightBat);
+      this.model.detectPoint();
+    }
+
+    this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.drawField();
+    this.drawBat(this.model.leftBat);
+    this.drawBat(this.model.rightBat);
+    this.drawBall();
+
+    if (!this.playing) {
+      this.drawPausedInfo();
+    }
+
+    this.prevTime = new Date();
+  }
+
+  drawField() {
+    this.context.beginPath();
+    this.context.strokeStyle = 'rgba(255, 255, 255, .1)';
+    this.context.setLineDash([this.canvas.width * 0.04, this.canvas.width * 0.047]);
+    this.context.lineWidth = this.canvas.width * 0.015;
+    this.context.moveTo(this.canvas.width / 2, 0);
+    this.context.lineTo(this.canvas.width / 2, this.canvas.height);
+    this.context.stroke();
+    this.context.setLineDash([]);
+
+    this.context.fillStyle = 'rgba(255, 255, 255, .3)';
+    this.context.font = `${this.canvas.width / 10}px "Lucida Console", Monaco, monospace`;
+    this.context.textBaseline = 'top';
+
+    this.context.textAlign = 'right';
+    this.context.fillText(
+      this.model.points[0],
+      (this.canvas.width / 2) - (this.canvas.width * 0.02),
+      this.canvas.width * 0.02,
+    );
+
+    this.context.fillStyle = 'rgba(255, 255, 255, .3)';
+    this.context.textAlign = 'left';
+    this.context.fillText(
+      this.model.points[1],
+      (this.canvas.width / 2) + (this.canvas.width * 0.02),
+      this.canvas.width * 0.02,
+    );
+  }
+
+  drawBall() {
+    this.context.beginPath();
+    this.context.fillStyle = 'yellow';
+    this.context.arc(
+      this.model.ball.x / this.model.abstractWidth * this.canvas.width,
+      this.model.ball.y / this.model.abstractHeight * this.canvas.height,
+      this.canvas.width * this.model.ball.r / this.model.abstractWidth, 0, Math.PI * 2,
+    );
+    this.context.fill();
+  }
+
+  drawBat(bat) {
+    this.context.fillStyle = 'white';
+    this.context.fillRect(
+      (bat.x - (bat.w / 2)) / this.model.abstractWidth * this.canvas.width,
+      (bat.y - (bat.h / 2)) / this.model.abstractHeight * this.canvas.height,
+      bat.w / this.model.abstractWidth * this.canvas.width,
+      bat.h / this.model.abstractHeight * this.canvas.height,
+    );
+  }
+
+  drawPausedInfo() {
+    this.context.fillStyle = 'rgba(255, 255, 255, .6)';
+    this.context.fillRect(
+      (this.canvas.width / 2) - (this.canvas.width * 0.35),
+      (this.canvas.height / 2) - (this.canvas.height * 0.1),
+      this.canvas.width * 0.7,
+      this.canvas.height * 0.2,
+    );
+
+    this.context.fillStyle = '#2e3f73';
+    this.context.font = `${this.canvas.width / 25}px "Lucida Console", Monaco, monospace`;
+    this.context.textBaseline = 'middle';
+    this.context.textAlign = 'center';
+    this.context.fillText(
+      `Press "SPACE" to ${this.started ? 'continue' : 'start'}!`,
+      this.canvas.width / 2,
+      this.canvas.height / 2,
+    );
   }
 }
 
-function loop() {
-  window.requestAnimationFrame(loop);
+const model = new PongerModel();
+const view = new PongerView(model);
 
-  if (playing) {
-    const dt = new Date() - prevTime;
-
-    model.updateLeftBat(dt);
-    model.updateRightBat(dt);
-    model.updateBall(dt);
-    model.detectCollision(model.leftBat);
-    model.detectCollision(model.rightBat);
-    model.detectPoint();
-  }
-
-  context.clearRect(0, 0, canvas.width, canvas.height);
-  drawField();
-  drawBat(model.leftBat);
-  drawBat(model.rightBat);
-  drawBall();
-
-  if (!playing) {
-    drawPausedInfo();
-  }
-
-  prevTime = new Date();
-}
-
-function drawField() {
-  context.beginPath();
-  context.strokeStyle = 'rgba(255, 255, 255, .1)';
-  context.setLineDash([canvas.width * 0.04, canvas.width * 0.047]);
-  context.lineWidth = canvas.width * 0.015;
-  context.moveTo(canvas.width / 2, 0);
-  context.lineTo(canvas.width / 2, canvas.height);
-  context.stroke();
-  context.setLineDash([]);
-
-  context.fillStyle = 'rgba(255, 255, 255, .3)';
-  context.font = `${canvas.width / 10}px "Lucida Console", Monaco, monospace`;
-  context.textBaseline = 'top';
-
-  context.textAlign = 'right';
-  context.fillText(model.points[0], (canvas.width / 2) - (canvas.width * 0.02), canvas.width * 0.02);
-
-  context.fillStyle = 'rgba(255, 255, 255, .3)';
-  context.textAlign = 'left';
-  context.fillText(model.points[1], (canvas.width / 2) + (canvas.width * 0.02), canvas.width * 0.02);
-}
-
-function drawBall() {
-  context.beginPath();
-  context.fillStyle = 'yellow';
-  context.arc(
-    model.ball.x / model.abstractWidth * canvas.width,
-    model.ball.y / model.abstractHeight * canvas.height,
-    canvas.width * model.ball.r / model.abstractWidth, 0, Math.PI * 2,
-  );
-  context.fill();
-}
-
-function drawBat(bat) {
-  context.fillStyle = 'white';
-  context.fillRect(
-    (bat.x / model.abstractWidth * canvas.width) - (bat.w / 2 / model.abstractWidth * canvas.width),
-    (bat.y / model.abstractHeight * canvas.height) - (bat.h / 2 / model.abstractHeight * canvas.height),
-    bat.w / model.abstractWidth * canvas.width,
-    bat.h / model.abstractHeight * canvas.height,
-  );
-}
-
-function drawPausedInfo() {
-  context.fillStyle = 'rgba(255, 255, 255, .6)';
-  context.fillRect(
-    (canvas.width / 2) - (canvas.width * 0.35),
-    (canvas.height / 2) - (canvas.height * 0.1),
-    canvas.width * 0.7,
-    canvas.height * 0.2,
-  );
-
-  context.fillStyle = '#2e3f73';
-  context.font = `${canvas.width / 25}px "Lucida Console", Monaco, monospace`;
-  context.textBaseline = 'middle';
-  context.textAlign = 'center';
-  context.fillText(`Press "SPACE" to ${started ? 'continue' : 'start'}!`, canvas.width / 2, canvas.height / 2);
-}
+view.init();
