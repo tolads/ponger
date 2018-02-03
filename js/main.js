@@ -10,6 +10,8 @@ let coefficient;
 let fieldRatio;
 const abstractWidth = 16;
 const abstractHeight = 9;
+let started = false;
+let playing = false;
 
 initialize();
 
@@ -52,10 +54,19 @@ function initialize() {
   resizeCanvas();
   window.addEventListener('keydown', (event) => {
     keys.add(event.keyCode);
-  }, false);
+  });
   window.addEventListener('keyup', (event) => {
     keys.delete(event.keyCode);
-  }, false);
+  });
+  window.addEventListener('keypress', (event) => {
+    if (event.keyCode === 32) {
+      started = true;
+      playing = !playing;
+    }
+  });
+  window.addEventListener('blur', () => {
+    playing = false;
+  });
 
   loop();
 }
@@ -75,18 +86,24 @@ function resizeCanvas() {
 function loop() {
   window.requestAnimationFrame(loop);
 
-  updateLeftBat();
-  updateRightBat();
-  updateBall();
-  detectCollision(leftBat);
-  detectCollision(rightBat);
-  detectPoint();
+  if (playing) {
+    updateLeftBat();
+    updateRightBat();
+    updateBall();
+    detectCollision(leftBat);
+    detectCollision(rightBat);
+    detectPoint();
+  }
 
   context.clearRect(0, 0, canvas.width, canvas.height);
   drawField();
   drawBat(leftBat);
   drawBat(rightBat);
   drawBall();
+
+  if (!playing) {
+    drawPausedInfo();
+  }
 
   prevTime = new Date();
 }
@@ -219,4 +236,20 @@ function drawBat(bat) {
     bat.w / abstractWidth * canvas.width,
     bat.h / abstractHeight * canvas.height,
   );
+}
+
+function drawPausedInfo() {
+  context.fillStyle = 'rgba(255, 255, 255, .6)';
+  context.fillRect(
+    (canvas.width / 2) - (canvas.width * 0.35),
+    (canvas.height / 2) - (canvas.height * 0.1),
+    canvas.width * 0.7,
+    canvas.height * 0.2,
+  );
+
+  context.fillStyle = '#2e3f73';
+  context.font = `${canvas.width / 25}px "Lucida Console", Monaco, monospace`;
+  context.textBaseline = 'middle';
+  context.textAlign = 'center';
+  context.fillText(`Press "SPACE" to ${started ? 'continue' : 'start'}!`, canvas.width / 2, canvas.height / 2);
 }
