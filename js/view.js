@@ -15,13 +15,13 @@ function initialize() {
   window.addEventListener('resize', resizeCanvas, false);
   resizeCanvas();
   window.addEventListener('keydown', (event) => {
-    model.keys.add(event.keyCode);
+    model.keys.add(event.which);
   });
   window.addEventListener('keyup', (event) => {
-    model.keys.delete(event.keyCode);
+    model.keys.delete(event.which);
   });
   window.addEventListener('keypress', (event) => {
-    if (event.keyCode === 32) {
+    if (event.which === 32) {
       started = true;
       playing = !playing;
     }
