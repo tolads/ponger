@@ -1,3 +1,44 @@
+class AbstractBat {
+  constructor({ x, y, v, w, h }) {
+    this.x = x;
+    this.y = y;
+    this.v = v;
+    this.w = w;
+    this.h = h;
+  }
+
+  move() {
+    throw new Error('Abstract method called!');
+  }
+}
+
+class PlayerBat extends AbstractBat {
+  constructor(params) {
+    super(params);
+
+    this.upKey = params.upKey;
+    this.downKey = params.downKey;
+  }
+
+  move({ dt, coefficient, keys }) {
+    if (keys.has(this.upKey)) {
+      this.y -= this.v * dt * coefficient;
+    } else if (keys.has(this.downKey)) {
+      this.y += this.v * dt * coefficient;
+    }
+  }
+}
+
+class ComputerBat extends AbstractBat {
+  move({ dt, coefficient, ballY }) {
+    if (ballY < this.y - 0.05) {
+      this.y -= this.v * dt * coefficient;
+    } else if (ballY > this.y + 0.05) {
+      this.y += this.v * dt * coefficient;
+    }
+  }
+}
+
 class PongerModel {
   constructor() {
     this.abstractWidth = 16;
@@ -5,7 +46,7 @@ class PongerModel {
     this.coefficient = 1e-4;
   }
 
-  init() {
+  init(mode = 'singleplayer') {
     this.ball = {
       x: 0.5 * this.abstractWidth,
       y: 0.5 * this.abstractHeight,
@@ -14,21 +55,35 @@ class PongerModel {
       dir: (Math.random() * Math.PI / 2) - (Math.PI / 4),
     };
 
-    this.leftBat = {
-      x: 0.05 * this.abstractWidth,
-      y: 0.5 * this.abstractHeight,
-      v: 25,
-      w: 0.03 * this.abstractWidth,
-      h: 0.3 * this.abstractHeight,
-    };
+    if (mode === 'twoplayer') {
+      this.leftBat = new PlayerBat({
+        x: 0.05 * this.abstractWidth,
+        y: 0.5 * this.abstractHeight,
+        v: 40,
+        w: 0.03 * this.abstractWidth,
+        h: 0.3 * this.abstractHeight,
+        upKey: 87,
+        downKey: 83,
+      });
+    } else {
+      this.leftBat = new ComputerBat({
+        x: 0.05 * this.abstractWidth,
+        y: 0.5 * this.abstractHeight,
+        v: 25,
+        w: 0.03 * this.abstractWidth,
+        h: 0.3 * this.abstractHeight,
+      });
+    }
 
-    this.rightBat = {
+    this.rightBat = new PlayerBat({
       x: (1 - 0.05) * this.abstractWidth,
       y: 0.5 * this.abstractHeight,
       v: 40,
       w: 0.03 * this.abstractWidth,
       h: 0.3 * this.abstractHeight,
-    };
+      upKey: 38,
+      downKey: 40,
+    });
 
     this.keys = new Set();
     this.points = [0, 0];
@@ -47,33 +102,23 @@ class PongerModel {
     }
   }
 
-  updateLeftBat(dt) {
-    if (this.ball.y < this.leftBat.y - 0.05 && this.leftBat.y - (this.leftBat.h / 2) > 0) {
-      this.leftBat.y -= this.leftBat.v * dt * this.coefficient;
-    } else if (this.ball.y > this.leftBat.y + 0.05
-      && this.leftBat.y + (this.leftBat.h / 2) < this.abstractHeight) {
-      this.leftBat.y += this.leftBat.v * dt * this.coefficient;
-    }
+  updateBats(dt) {
+    [this.leftBat, this.rightBat].forEach((bat) => {
+      bat.move({
+        dt,
+        coefficient: this.coefficient,
+        keys: this.keys,
+        ballY: this.ball.y,
+      });
 
-    if (this.leftBat.y - (this.leftBat.h / 2) < 0) {
-      this.leftBat.y = this.leftBat.h / 2;
-    }
-
-    if (this.leftBat.y + (this.leftBat.h / 2) > this.abstractHeight) {
-      this.leftBat.y = this.abstractHeight - (this.leftBat.h / 2);
-    }
-  }
-
-  updateRightBat(dt) {
-    if (this.keys.has(38)) {
-      if (this.rightBat.y - (this.rightBat.h / 2) > 0) {
-        this.rightBat.y -= this.rightBat.v * dt * this.coefficient;
+      if (bat.y - (bat.h / 2) < 0) {
+        bat.y = bat.h / 2;
       }
-    } else if (this.keys.has(40)) {
-      if (this.rightBat.y + (this.rightBat.h / 2) < this.abstractHeight) {
-        this.rightBat.y += this.rightBat.v * dt * this.coefficient;
+
+      if (bat.y + (bat.h / 2) > this.abstractHeight) {
+        bat.y = this.abstractHeight - (bat.h / 2);
       }
-    }
+    });
   }
 
   detectCollision(bat) {

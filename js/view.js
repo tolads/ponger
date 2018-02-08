@@ -7,12 +7,33 @@ class PongerView {
 
   init() {
     this.model.init();
-    this.prevTime = new Date();
     this.started = false;
     this.playing = false;
 
-    window.addEventListener('resize', this.resizeCanvas, false);
+    window.addEventListener('resize', () => { this.resizeCanvas(); }, false);
     this.resizeCanvas();
+
+    const menu = document.getElementById('menu');
+    if (menu) {
+      menu.classList.remove('hidden');
+
+      menu.querySelectorAll('button').forEach((element, index) => {
+        if (index === 0) element.focus();
+
+        element.addEventListener('click', (event) => {
+          menu.classList.add('hidden');
+
+          const btn = event.target && event.target.closest && event.target.closest('button');
+          btn.blur();
+          this.start(btn && btn.value);
+        });
+      });
+    }
+  }
+
+  start(mode) {
+    this.model.init(mode);
+    this.prevTime = new Date();
 
     window.addEventListener('keydown', (event) => {
       this.model.keys.add(event.which);
@@ -53,8 +74,7 @@ class PongerView {
     if (this.playing) {
       const dt = new Date() - this.prevTime;
 
-      this.model.updateLeftBat(dt);
-      this.model.updateRightBat(dt);
+      this.model.updateBats(dt);
       this.model.updateBall(dt);
       this.model.detectCollision(this.model.leftBat);
       this.model.detectCollision(this.model.rightBat);
@@ -62,7 +82,8 @@ class PongerView {
     }
 
     this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    this.drawField();
+    this.drawLines();
+    this.drawPoints();
     this.drawBat(this.model.leftBat);
     this.drawBat(this.model.rightBat);
     this.drawBall();
@@ -74,7 +95,7 @@ class PongerView {
     this.prevTime = new Date();
   }
 
-  drawField() {
+  drawLines() {
     this.context.beginPath();
     this.context.strokeStyle = 'rgba(255, 255, 255, .1)';
     this.context.setLineDash([this.canvas.width * 0.04, this.canvas.width * 0.047]);
@@ -83,14 +104,16 @@ class PongerView {
     this.context.lineTo(this.canvas.width / 2, this.canvas.height);
     this.context.stroke();
     this.context.setLineDash([]);
+  }
 
+  drawPoints() {
     this.context.fillStyle = 'rgba(255, 255, 255, .3)';
     this.context.font = `${this.canvas.width / 10}px "Lucida Console", Monaco, monospace`;
     this.context.textBaseline = 'top';
 
     this.context.textAlign = 'right';
     this.context.fillText(
-      this.model.points[0],
+      this.model.points ? this.model.points[0] : 0,
       (this.canvas.width / 2) - (this.canvas.width * 0.02),
       this.canvas.width * 0.02,
     );
@@ -98,7 +121,7 @@ class PongerView {
     this.context.fillStyle = 'rgba(255, 255, 255, .3)';
     this.context.textAlign = 'left';
     this.context.fillText(
-      this.model.points[1],
+      this.model.points ? this.model.points[1] : 0,
       (this.canvas.width / 2) + (this.canvas.width * 0.02),
       this.canvas.width * 0.02,
     );

@@ -88,16 +88,65 @@ textarea {
 
 body {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100%;
-  width: 100%;
-  overflow: hidden;
   position: fixed;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
 }
 
 canvas {
   background-color: #2e3f73;
+}
+
+.menu {
+  display: flex;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, .3);
+  font-size: 7vmin;
+}
+
+.menu button {
+  box-sizing: content-box;
+  width: 80vmin;
+  margin-top: 1vmin;
+  margin-bottom: 1vmin;
+  padding: 1vmin;
+  transition: padding .2s, margin .2s, border-color .2s;
+  border: .2vh solid rgba(255, 255, 255, .8);
+  background-color: transparent;
+  cursor: pointer;
+}
+
+.menu button:not(:last-child) {
+  margin-bottom: 10vmin;
+}
+
+.menu button:not(:last-child):hover,
+.menu button:not(:last-child):focus {
+  margin-bottom: 9vmin;
+}
+
+.menu button:hover,
+.menu button:focus {
+  margin-top: 0;
+  margin-bottom: 0;
+  padding: 2vmin;
+  border-color: rgba(178, 178, 178, .8);
+}
+
+.menu button span {
+  display: block;
+  padding: 2vh;
+  background-color: rgba(255, 255, 255, .8);
 }
 
 /* ==========================================================================
