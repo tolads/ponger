@@ -1,10 +1,16 @@
+/** Class for Ponger view layer */
 class PongerView {
+  /**
+   * Create a Ponger view
+   * @param {PongerModel} model - dependency injection
+   */
   constructor(model) {
     this.model = model;
     this.canvas = document.getElementById('canvas');
     this.context = this.canvas.getContext('2d');
   }
 
+  /** Initialize view */
   init() {
     this.model.init();
     this.started = false;
@@ -31,6 +37,10 @@ class PongerView {
     }
   }
 
+  /**
+   * Start a new game
+   * @param {String} mode - game mode: singleplayer of twoplayer
+   */
   start(mode) {
     this.model.init(mode);
     this.prevTime = new Date();
@@ -55,6 +65,7 @@ class PongerView {
     this.loop();
   }
 
+  /** Resize <canvas> element */
   resizeCanvas() {
     const containerSize = { w: window.innerWidth, h: window.innerHeight };
     const fieldRatio = this.model.abstractWidth / this.model.abstractHeight;
@@ -68,6 +79,7 @@ class PongerView {
     }
   }
 
+  /** Main loop */
   loop() {
     window.requestAnimationFrame(() => { this.loop(); });
 
@@ -95,6 +107,7 @@ class PongerView {
     this.prevTime = new Date();
   }
 
+  /** Draw dashed half-way line */
   drawLines() {
     this.context.beginPath();
     this.context.strokeStyle = 'rgba(255, 255, 255, .1)';
@@ -106,6 +119,7 @@ class PongerView {
     this.context.setLineDash([]);
   }
 
+  /** Write out current points of players */
   drawPoints() {
     this.context.fillStyle = 'rgba(255, 255, 255, .3)';
     this.context.font = `${this.canvas.width / 10}px "Lucida Console", Monaco, monospace`;
@@ -127,6 +141,7 @@ class PongerView {
     );
   }
 
+  /** Draw the ball */
   drawBall() {
     this.context.beginPath();
     this.context.fillStyle = 'yellow';
@@ -138,6 +153,14 @@ class PongerView {
     this.context.fill();
   }
 
+  /**
+   * Draw a bat
+   * @param {Object} bat
+   * @param {number} bat.x - X position
+   * @param {number} bat.y - Y position
+   * @param {number} bat.w - abstract width
+   * @param {number} bat.h - abstract height
+   */
   drawBat(bat) {
     this.context.fillStyle = 'white';
     this.context.fillRect(
@@ -148,6 +171,7 @@ class PongerView {
     );
   }
 
+  /** Write out message when paused */
   drawPausedInfo() {
     this.context.fillStyle = 'rgba(255, 255, 255, .6)';
     this.context.fillRect(

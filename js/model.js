@@ -1,4 +1,14 @@
+/** Abstract class representing a bat */
 class AbstractBat {
+  /**
+   * Create a bat
+   * @param {Object} $0
+   * @param {number} $0.x - X position
+   * @param {number} $0.y - Y position
+   * @param {number} $0.v - speed
+   * @param {number} $0.w - width
+   * @param {number} $0.h - height
+   */
   constructor({ x, y, v, w, h }) {
     this.x = x;
     this.y = y;
@@ -7,12 +17,26 @@ class AbstractBat {
     this.h = h;
   }
 
+  /**
+   * Move the bat
+   * @abstract
+   */
   move() {
     throw new Error('Abstract method called!');
   }
 }
 
+/**
+ * Class representing player's bat
+ * @extends AbstractBat
+ */
 class PlayerBat extends AbstractBat {
+  /**
+   * Create a player's bat
+   * @param {Object} params
+   * @param {number} params.upKey - key code which moves bat upwards
+   * @param {number} params.downKey - key code which moves bat downwards
+   */
   constructor(params) {
     super(params);
 
@@ -20,6 +44,13 @@ class PlayerBat extends AbstractBat {
     this.downKey = params.downKey;
   }
 
+  /**
+   * Move player's bat
+   * @param {Object} $0
+   * @param {number} $0.dt - elapsed time
+   * @param {number} $0.coefficient - coefficient used with speed
+   * @param {Set} $0.keys - set of currently pressed keys
+   */
   move({ dt, coefficient, keys }) {
     if (keys.has(this.upKey)) {
       this.y -= this.v * dt * coefficient;
@@ -29,7 +60,18 @@ class PlayerBat extends AbstractBat {
   }
 }
 
+/**
+ * Class representing computer's bat
+ * @extends AbstractBat
+ */
 class ComputerBat extends AbstractBat {
+  /**
+   * Move computer's bat
+   * @param {Object} $0
+   * @param {number} $0.dt - elapsed time
+   * @param {number} $0.coefficient - coefficient used with speed
+   * @param {Set} $0.ballY - current Y position of the ball
+   */
   move({ dt, coefficient, ballY }) {
     if (ballY < this.y - 0.05) {
       this.y -= this.v * dt * coefficient;
@@ -39,13 +81,19 @@ class ComputerBat extends AbstractBat {
   }
 }
 
+/** Class for Ponger model layer */
 class PongerModel {
+  /** Create a Ponger model */
   constructor() {
     this.abstractWidth = 16;
     this.abstractHeight = 9;
     this.coefficient = 1e-4;
   }
 
+  /**
+   * Initialize model
+   * @param {string} [mode=singleplayer] - game mode: singleplayer of twoplayer
+   */
   init(mode = 'singleplayer') {
     this.ball = {
       x: 0.5 * this.abstractWidth,
@@ -89,6 +137,10 @@ class PongerModel {
     this.points = [0, 0];
   }
 
+  /**
+   * Update ball position
+   * @param {number} dt - elapsed time
+   */
   updateBall(dt) {
     this.ball.x += Math.cos(this.ball.dir) * this.ball.v * dt * this.coefficient;
     this.ball.y += Math.sin(this.ball.dir) * this.ball.v * dt * this.coefficient;
@@ -102,6 +154,10 @@ class PongerModel {
     }
   }
 
+  /**
+   * Update bats's position
+   * @param {number} dt - elapsed time
+   */
   updateBats(dt) {
     [this.leftBat, this.rightBat].forEach((bat) => {
       bat.move({
@@ -121,6 +177,10 @@ class PongerModel {
     });
   }
 
+  /**
+   * Detect collision between a bat and the ball
+   * @param {AbstractBat} bat - the bat to check
+   */
   detectCollision(bat) {
     if (Math.abs(bat.y - this.ball.y) < (bat.h / 2) + this.ball.r
       && Math.abs(bat.x - this.ball.x) < (bat.w / 2) + this.ball.r) {
@@ -145,6 +205,7 @@ class PongerModel {
     }
   }
 
+  /** Detect whether a point is scored */
   detectPoint() {
     if (this.ball.x < -this.ball.r || this.ball.x > this.abstractWidth + this.ball.r) {
       this.ball.dir = (Math.random() * Math.PI / 2) - (Math.PI / 4);
