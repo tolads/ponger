@@ -99,7 +99,7 @@ class PongerModel {
       x: 0.5 * this.abstractWidth,
       y: 0.5 * this.abstractHeight,
       r: 0.02 * this.abstractWidth,
-      v: 80,
+      v: 100,
       dir: (Math.random() * Math.PI / 2) - (Math.PI / 4),
     };
 
@@ -107,7 +107,7 @@ class PongerModel {
       this.leftBat = new PlayerBat({
         x: 0.05 * this.abstractWidth,
         y: 0.5 * this.abstractHeight,
-        v: 40,
+        v: 20,
         w: 0.03 * this.abstractWidth,
         h: 0.3 * this.abstractHeight,
         upKey: 87,
