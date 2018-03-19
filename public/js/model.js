@@ -49,7 +49,7 @@ class PlayerBat extends AbstractBat {
    * @param {Object} $0
    * @param {number} $0.dt - elapsed time
    * @param {number} $0.coefficient - coefficient used with speed
-   * @param {Set} $0.keys - set of currently pressed keys
+   * @param {Set<number>} $0.keys - set of currently pressed keys
    */
   move({ dt, coefficient, keys }) {
     if (keys.has(this.upKey)) {
@@ -70,7 +70,7 @@ class ComputerBat extends AbstractBat {
    * @param {Object} $0
    * @param {number} $0.dt - elapsed time
    * @param {number} $0.coefficient - coefficient used with speed
-   * @param {Set} $0.ballY - current Y position of the ball
+   * @param {number} $0.ballY - current Y position of the ball
    */
   move({ dt, coefficient, ballY }) {
     if (ballY < this.y - 0.05) {
@@ -88,13 +88,45 @@ class PongerModel {
     this.abstractWidth = 16;
     this.abstractHeight = 9;
     this.coefficient = 1e-4;
+
+    this.states = {
+      OFFLINE: 0,
+      CONNECTING: 1,
+      CONNECTION_FAILED: 2,
+      WAITING_OPPONENT_TO_CONNECT: 3,
+      WAITING_PLAYER: 4,
+      WAITING_OPPONENT_TO_START: 5,
+      PLAYING: 6,
+      OPPONENT_DISCONNECTED: 7,
+    };
+
+    if (typeof window !== 'undefined') {
+      this.openRoomEvent = new CustomEvent('open_room');
+      this.playingOnlineEvent = new CustomEvent('playing_online');
+      this.disconnectedEvent = new CustomEvent('disconnected');
+    }
   }
 
   /**
    * Initialize model
    * @param {string} [mode=singleplayer] - game mode: singleplayer of twoplayer
+   * @param {string} hash - id of the room to connect
    */
-  init(mode = 'singleplayer') {
+  init(mode = 'singleplayer', hash) {
+    // 0 = offline
+    // 1 = connecting
+    // 2 = connection failed
+    // 3 = waiting opponent
+    // 4 = waiting player to start
+    // 5 = waiting opponent to start
+    // 6 = playing
+    // 7 = opponent disconnected
+    this.state = this.states.OFFLINE;
+
+    if (mode === 'online') {
+      this.connect(hash);
+    }
+
     this.ball = {
       x: 0.5 * this.abstractWidth,
       y: 0.5 * this.abstractHeight,
@@ -107,7 +139,7 @@ class PongerModel {
       this.leftBat = new PlayerBat({
         x: 0.05 * this.abstractWidth,
         y: 0.5 * this.abstractHeight,
-        v: 20,
+        v: 40,
         w: 0.03 * this.abstractWidth,
         h: 0.3 * this.abstractHeight,
         upKey: 87,
@@ -135,6 +167,119 @@ class PongerModel {
 
     this.keys = new Set();
     this.points = [0, 0];
+  }
+
+  /**
+   * Connect to server
+   * @param {string} hash - id of the room to connect
+   */
+  connect(hash) {
+    this.state = this.states.CONNECTING;
+    this.opponentHasStarted = false;
+
+    this.socket = window.io && window.io();
+
+    if (!this.socket) {
+      this.state = this.states.CONNECTION_FAILED;
+      return;
+    }
+
+    this.socket.on('connect_error', () => { this.state = this.states.CONNECTION_FAILED; });
+    this.socket.on('connect_timeout', () => { this.state = this.states.CONNECTION_FAILED; });
+
+    if (!hash) {
+      this.socket.emit('open_room', undefined, (data) => {
+        this.roomId = data;
+        document.dispatchEvent(this.openRoomEvent);
+        this.state = this.states.WAITING_OPPONENT_TO_CONNECT;
+      });
+
+      this.socket.on('opponent_connected', () => {
+        this.state = this.states.WAITING_PLAYER;
+      });
+    } else {
+      this.socket.emit('join_room', hash, (data) => {
+        if (data) {
+          this.state = this.states.WAITING_PLAYER;
+        } else {
+          this.state = this.states.CONNECTION_FAILED;
+        }
+      });
+    }
+
+    this.socket.on('opponent_started', () => {
+      this.opponentHasStarted = true;
+
+      if (this.state === this.states.WAITING_OPPONENT_TO_START) {
+        this.state = this.states.PLAYING;
+        document.dispatchEvent(this.playingOnlineEvent);
+      }
+    });
+
+    this.socket.on('update_state', (data) => {
+      this.ball = data.ball;
+      this.leftBat.x = data.leftBat.x;
+      this.leftBat.y = data.leftBat.y;
+      this.leftBat.v = data.leftBat.v;
+      this.rightBat.x = data.rightBat.x;
+      this.rightBat.y = data.rightBat.y;
+      this.rightBat.v = data.rightBat.v;
+      this.points = data.points;
+    });
+
+    this.socket.on('opponent_disconnected', () => {
+      this.state = this.states.OPPONENT_DISCONNECTED;
+      document.dispatchEvent(this.disconnectedEvent);
+    });
+
+    this.socket.on('disconnecting', () => {
+      this.state = this.states.CONNECTION_FAILED;
+      document.dispatchEvent(this.disconnectedEvent);
+    });
+  }
+
+  /**
+   * User pressed key
+   * @param {number} key
+   */
+  keyDown(key) {
+    if (this.state === this.states.PLAYING && !this.keys.has(key)) {
+      if (key === 38) {
+        this.socket.emit('go_up');
+      } else if (key === 40) {
+        this.socket.emit('go_down');
+      }
+    }
+
+    this.keys.add(key);
+  }
+
+  /**
+   * User released key
+   * @param {number} key
+   */
+  keyUp(key) {
+    this.keys.delete(key);
+
+    if (this.state === this.states.PLAYING) {
+      if (key === 38) {
+        this.socket.emit('stop_going_up');
+      } else if (key === 40) {
+        this.socket.emit('stop_going_down');
+      }
+    }
+  }
+
+  /** Handle when player started the online game */
+  playerStarted() {
+    this.socket.emit('start');
+
+    if (!this.opponentHasStarted) {
+      this.state = this.states.WAITING_OPPONENT_TO_START;
+    } else {
+      this.state = this.states.PLAYING;
+      document.dispatchEvent(this.playingOnlineEvent);
+    }
   }
 
   /**
@@ -221,4 +366,8 @@ class PongerModel {
       this.ball.y = 0.5 * this.abstractHeight;
     }
   }
+}
+
+if (typeof window === 'undefined') {
+  module.exports.PongerModel = PongerModel;
 }

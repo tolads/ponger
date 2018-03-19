@@ -16,10 +16,22 @@ class PongerView {
     this.started = false;
     this.playing = false;
 
+    // handle window resize
     window.addEventListener('resize', () => { this.resizeCanvas(); }, false);
     this.resizeCanvas();
 
     const menu = document.getElementById('menu');
+
+    // if connecting to a started game
+    if (window.location.hash !== '' && window.location.hash !== '#') {
+      if (menu) menu.classList.add('hidden');
+
+      this.start('online', window.location.hash.substr(1));
+
+      return;
+    }
+
+    // handle menu
     if (menu) {
       menu.classList.remove('hidden');
 
@@ -30,7 +42,7 @@ class PongerView {
           menu.classList.add('hidden');
 
           const btn = event.target && event.target.closest && event.target.closest('button');
-          btn.blur();
+          if (btn) btn.blur();
           this.start(btn && btn.value);
         });
       });
@@ -39,30 +51,61 @@ class PongerView {
 
   /**
    * Start a new game
-   * @param {String} mode - game mode: singleplayer of twoplayer
+   * @param {string} mode - game mode: singleplayer of twoplayer
+   * @param {string} hash - id of the room to connect
    */
-  start(mode) {
-    this.model.init(mode);
+  start(mode, hash) {
+    this.model.init(mode, hash);
     this.prevTime = new Date();
 
     window.addEventListener('keydown', (event) => {
-      this.model.keys.add(event.which);
+      this.model.keyDown(event.which);
     });
     window.addEventListener('keyup', (event) => {
-      this.model.keys.delete(event.which);
+      this.model.keyUp(event.which);
     });
 
     window.addEventListener('keypress', (event) => {
       if (event.which === 32) {
-        this.started = true;
-        this.playing = !this.playing;
+        switch (this.model.state) {
+          case this.model.states.OFFLINE: {
+            this.started = true;
+            this.playing = !this.playing;
+            break;
+          }
+          case this.model.states.WAITING_PLAYER: {
+            this.model.playerStarted();
+            break;
+          }
+          default:
+        }
       }
     });
-    window.addEventListener('blur', () => {
-      this.playing = false;
-    });
+
+    if (this.model.state === this.model.states.OFFLINE) {
+      window.addEventListener('blur', () => {
+        this.playing = false;
+      });
+    } else {
+      this.handleModelEvents();
+    }
 
     this.loop();
+  }
+
+  /** Handle model's events */
+  handleModelEvents() {
+    document.addEventListener('open_room', () => {
+      window.location.hash = this.model.roomId;
+    });
+
+    document.addEventListener('playing_online', () => {
+      this.playing = true;
+    });
+
+    document.addEventListener('disconnected', () => {
+      this.playing = false;
+    });
   }
 
   /** Resize <canvas> element */
@@ -86,11 +129,13 @@ class PongerView {
     if (this.playing) {
       const dt = new Date() - this.prevTime;
 
-      this.model.updateBats(dt);
       this.model.updateBall(dt);
-      this.model.detectCollision(this.model.leftBat);
-      this.model.detectCollision(this.model.rightBat);
-      this.model.detectPoint();
+      if (this.model.state === this.model.states.OFFLINE) {
+        this.model.updateBats(dt);
+        this.model.detectCollision(this.model.leftBat);
+        this.model.detectCollision(this.model.rightBat);
+        this.model.detectPoint();
+      }
     }
 
     this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -185,11 +230,29 @@ class PongerView {
     this.context.font = `${this.canvas.width / 25}px "Lucida Console", Monaco, monospace`;
     this.context.textBaseline = 'middle';
     this.context.textAlign = 'center';
+
     this.context.fillText(
-      `Press "SPACE" to ${this.started ? 'continue' : 'start'}!`,
+      this.getInfoText(),
       this.canvas.width / 2,
       this.canvas.height / 2,
+      this.canvas.width * 0.65,
     );
+  }
+
+  /**
+   * Return info text about current state
+   * @return {string}
+   */
+  getInfoText() {
+    switch (this.model.state) {
+      case this.model.states.CONNECTING: return 'Connecting...';
+      case this.model.states.CONNECTION_FAILED: return 'Connection failed.';
+      case this.model.states.WAITING_OPPONENT_TO_CONNECT:
+        return 'Share the URL with your opponent to connect!';
+      case this.model.states.WAITING_OPPONENT_TO_START: return 'Waiting opponent to start.';
+      case this.model.states.OPPONENT_DISCONNECTED: return 'Opponent disconnected.';
+      default: return `Press "SPACE" to ${this.started ? 'continue' : 'start'}!`;
+    }
   }
 }
 

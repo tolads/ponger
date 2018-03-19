@@ -127,12 +127,12 @@ canvas {
 }
 
 .menu button:not(:last-child) {
-  margin-bottom: 10vmin;
+  margin-bottom: 4vmin;
 }
 
 .menu button:not(:last-child):hover,
 .menu button:not(:last-child):focus {
-  margin-bottom: 9vmin;
+  margin-bottom: 3vmin;
 }
 
 .menu button:hover,
@@ -145,7 +145,7 @@ canvas {
 
 .menu button span {
   display: block;
-  padding: 2vh;
+  padding: 1vh;
   background-color: rgba(255, 255, 255, .8);
 }
 
