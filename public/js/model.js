@@ -131,15 +131,15 @@ class PongerModel {
       x: 0.5 * this.abstractWidth,
       y: 0.5 * this.abstractHeight,
       r: 0.02 * this.abstractWidth,
-      v: 100,
-      dir: (Math.random() * Math.PI / 2) - (Math.PI / 4),
+      v: 160,
+      dir: 0,
     };
 
     if (mode === 'twoplayer') {
       this.leftBat = new PlayerBat({
         x: 0.05 * this.abstractWidth,
         y: 0.5 * this.abstractHeight,
-        v: 40,
+        v: 70,
         w: 0.03 * this.abstractWidth,
         h: 0.3 * this.abstractHeight,
         upKey: 87,
@@ -149,7 +149,7 @@ class PongerModel {
       this.leftBat = new ComputerBat({
         x: 0.05 * this.abstractWidth,
         y: 0.5 * this.abstractHeight,
-        v: 25,
+        v: 50,
         w: 0.03 * this.abstractWidth,
         h: 0.3 * this.abstractHeight,
       });
@@ -158,7 +158,7 @@ class PongerModel {
     this.rightBat = new PlayerBat({
       x: (1 - 0.05) * this.abstractWidth,
       y: 0.5 * this.abstractHeight,
-      v: 40,
+      v: 70,
       w: 0.03 * this.abstractWidth,
       h: 0.3 * this.abstractHeight,
       upKey: 38,
@@ -353,17 +353,25 @@ class PongerModel {
   /** Detect whether a point is scored */
   detectPoint() {
     if (this.ball.x < -this.ball.r || this.ball.x > this.abstractWidth + this.ball.r) {
-      this.ball.dir = (Math.random() * Math.PI / 2) - (Math.PI / 4);
-
       if (this.ball.x < this.ball.r) {
         this.points[1]++;
-        this.ball.dir += Math.PI;
+
+        this.ball.x = 0.5 * this.abstractWidth;
+        this.ball.y = 0.5 * this.abstractHeight;
+
+        const dx = this.leftBat.x - this.ball.x;
+        const dy = this.leftBat.y - this.ball.y;
+        this.ball.dir = Math.asin(-dy / Math.sqrt((dx ** 2) + (dy ** 2))) + Math.PI;
       } else {
         this.points[0]++;
-      }
 
-      this.ball.x = 0.5 * this.abstractWidth;
-      this.ball.y = 0.5 * this.abstractHeight;
+        this.ball.x = 0.5 * this.abstractWidth;
+        this.ball.y = 0.5 * this.abstractHeight;
+
+        const dx = this.rightBat.x - this.ball.x;
+        const dy = this.rightBat.y - this.ball.y;
+        this.ball.dir = Math.asin(dy / Math.sqrt((dx ** 2) + (dy ** 2)));
+      }
     }
   }
 }
