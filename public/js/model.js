@@ -240,7 +240,7 @@ class PongerModel {
 
   /**
    * User pressed key
-   * @param {number} key
+   * @param {number} key - pressed key
    */
   keyDown(key) {
     if (this.state === this.states.PLAYING && !this.keys.has(key)) {
@@ -256,7 +256,7 @@ class PongerModel {
 
   /**
    * User released key
-   * @param {number} key
+   * @param {number} key - pressed key
    */
   keyUp(key) {
     this.keys.delete(key);
@@ -361,7 +361,7 @@ class PongerModel {
 
         const dx = this.leftBat.x - this.ball.x;
         const dy = this.leftBat.y - this.ball.y;
-        this.ball.dir = Math.asin(-dy / Math.sqrt((dx ** 2) + (dy ** 2))) + Math.PI;
+        this.ball.dir = Math.asin(-dy / Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2))) + Math.PI;
       } else {
         this.points[0]++;
 
@@ -370,7 +370,7 @@ class PongerModel {
 
         const dx = this.rightBat.x - this.ball.x;
         const dy = this.rightBat.y - this.ball.y;
-        this.ball.dir = Math.asin(dy / Math.sqrt((dx ** 2) + (dy ** 2)));
+        this.ball.dir = Math.asin(dy / Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2)));
       }
     }
   }

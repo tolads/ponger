@@ -15,7 +15,55 @@ server.listen(port, () => console.log(`Ponger app listening on port ${port}.`));
 /** @type {Map<string, {{model: PongerModel, player1: String}}>} */
 const startedGames = new Map();
 
+/**
+ * Main game loop body
+ * @param {string} room - socket room in which the game is played
+ * @param {PongerModel} model - used model instance
+ * @param {Date} prevTime - when did the loop run previously
+ */
+const loopInner = (room, model, prevTime) => {
+  const dt = new Date() - prevTime;
+  model.updateBall(dt);
+  model.updateBats(dt);
+  model.detectCollision(model.leftBat);
+  model.detectCollision(model.rightBat);
+  model.detectPoint();
+
+  io.to(room).emit('update_state', {
+    ball: model.ball,
+    leftBat: model.leftBat,
+    rightBat: model.rightBat,
+    points: model.points,
+  });
+};
+
+/**
+ * Move bat according to query
+ * @param {string} event - event triggered
+ * @param {Socket} client - client who triggered the event
+ */
+const moveBat = (event, client) => {
+  const room = Object.keys(client.rooms).find(element => element.startsWith('r_'));
+
+  if (room) {
+    const { model, player1 } = startedGames.get(room);
+
+    switch (event) {
+      case 'go_up':           model.keyDown(player1 === client.id ? 38 : 87); break;
+      case 'go_down':         model.keyDown(player1 === client.id ? 40 : 83); break;
+      case 'stop_going_up':   model.keyUp(player1 === client.id ? 38 : 87); break;
+      case 'stop_going_down': model.keyUp(player1 === client.id ? 40 : 83); break;
+      default: break;
+    }
+  }
+};
+
+/** Client connection */
 io.on('connection', (client) => {
+  /**
+   * Open new game room
+   * @listens open_room
+   */
   client.on('open_room', (name, fn) => {
     console.log('Client', client.id, 'opened room', `r_${client.id}`);
 
@@ -23,6 +71,10 @@ io.on('connection', (client) => {
     fn(client.id);
   });
 
+  /**
+   * Join an existing game room
+   * @listens join_room
+   */
   client.on('join_room', (name, fn) => {
     if (io.sockets.adapter.rooms[`r_${name}`]
       && io.sockets.adapter.rooms[`r_${name}`].length === 1) {
@@ -39,6 +91,10 @@ io.on('connection', (client) => {
     }
   });
 
+  /**
+   * Start game in a room
+   * @listens start
+   */
   client.on('start', () => {
     const room = Object.keys(client.rooms).find(element => element.startsWith('r_'));
 
@@ -59,19 +115,7 @@ io.on('connection', (client) => {
         const loop = () => {
           if (startedGames.has(room)) setTimeout(() => loop(), 30);
 
-          const dt = new Date() - prevTime;
-          model.updateBall(dt);
-          model.updateBats(dt);
-          model.detectCollision(model.leftBat);
-          model.detectCollision(model.rightBat);
-          model.detectPoint();
-
-          io.to(room).emit('update_state', {
-            ball: model.ball,
-            leftBat: model.leftBat,
-            rightBat: model.rightBat,
-            points: model.points,
-          });
+          loopInner(room, model, prevTime);
 
           prevTime = new Date();
         };
@@ -81,46 +125,34 @@ io.on('connection', (client) => {
     }
   });
 
-  client.on('go_up', () => {
-    const room = Object.keys(client.rooms).find(element => element.startsWith('r_'));
+  /**
+   * Start moving bat upwards
+   * @listens go_up
+   */
+  client.on('go_up', () => { moveBat('go_up', client); });
 
-    if (room) {
-      const { model, player1 } = startedGames.get(room);
+  /**
+   * Start moving bat downwards
+   * @listens go_down
+   */
+  client.on('go_down', () => { moveBat('go_down', client); });
 
-      model.keyDown(player1 === client.id ? 38 : 87);
-    }
-  });
+  /**
+   * Stop moving bat upwnwards
+   * @listens stop_going_up
+   */
+  client.on('stop_going_up', () => { moveBat('stop_going_up', client); });
 
-  client.on('go_down', () => {
-    const room = Object.keys(client.rooms).find(element => element.startsWith('r_'));
+  /**
+   * Stop moving bat downwards
+   * @listens stop_going_down
+   */
+  client.on('stop_going_down', () => { moveBat('stop_going_down', client); });
 
-    if (room) {
-      const { model, player1 } = startedGames.get(room);
-
-      model.keyDown(player1 === client.id ? 40 : 83);
-    }
-  });
-
-  client.on('stop_going_up', () => {
-    const room = Object.keys(client.rooms).find(element => element.startsWith('r_'));
-
-    if (room) {
-      const { model, player1 } = startedGames.get(room);
-
-      model.keyUp(player1 === client.id ? 38 : 87);
-    }
-  });
-
-  client.on('stop_going_down', () => {
-    const room = Object.keys(client.rooms).find(element => element.startsWith('r_'));
-
-    if (room) {
-      const { model, player1 } = startedGames.get(room);
-
-      model.keyUp(player1 === client.id ? 40 : 83);
-    }
-  });
-
+  /**
+   * Close game in a room
+   * @listens disconnecting
+   */
   client.on('disconnecting', () => {
     const room = Object.keys(client.rooms).find(element => element.startsWith('r_'));
 
