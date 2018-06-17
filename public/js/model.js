@@ -376,6 +376,4 @@ class PongerModel {
   }
 }
 
-if (typeof window === 'undefined') {
-  module.exports.PongerModel = PongerModel;
-}
+module.exports.PongerModel = PongerModel;

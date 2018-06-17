@@ -49,9 +49,9 @@ const moveBat = (event, client) => {
     const { model, player1 } = startedGames.get(room);
 
     switch (event) {
-      case 'go_up':           model.keyDown(player1 === client.id ? 38 : 87); break;
-      case 'go_down':         model.keyDown(player1 === client.id ? 40 : 83); break;
-      case 'stop_going_up':   model.keyUp(player1 === client.id ? 38 : 87); break;
+      case 'go_up': model.keyDown(player1 === client.id ? 38 : 87); break;
+      case 'go_down': model.keyDown(player1 === client.id ? 40 : 83); break;
+      case 'stop_going_up': model.keyUp(player1 === client.id ? 38 : 87); break;
       case 'stop_going_down': model.keyUp(player1 === client.id ? 40 : 83); break;
       default: break;
     }

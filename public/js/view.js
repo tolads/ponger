@@ -1,3 +1,5 @@
+import { PongerModel } from './model';
+
 /** Class for Ponger view layer */
 class PongerView {
   /**
