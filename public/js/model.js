@@ -188,10 +188,14 @@ class PongerModel {
     this.socket.on('connect_timeout', () => { this.state = this.states.CONNECTION_FAILED; });
 
     if (!hash) {
-      this.socket.emit('open_room', undefined, (data) => {
-        this.roomId = data;
-        document.dispatchEvent(this.openRoomEvent);
-        this.state = this.states.WAITING_OPPONENT_TO_CONNECT;
+      this.socket.emit('open_room', undefined, ({ ok, id }) => {
+        if (ok) {
+          this.roomId = id;
+          document.dispatchEvent(this.openRoomEvent);
+          this.state = this.states.WAITING_OPPONENT_TO_CONNECT;
+        } else {
+          this.state = this.states.CONNECTION_FAILED;
+        }
       });
 
       this.socket.on('opponent_connected', () => {

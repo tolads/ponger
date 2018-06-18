@@ -65,27 +65,35 @@ io.on('connection', (client) => {
    * @listens open_room
    */
   client.on('open_room', (name, fn) => {
-    console.log('Client', client.id, 'opened room', `r_${client.id}`);
+    const room = `r_${client.id}`;
 
-    client.join(`r_${client.id}`);
-    fn(client.id);
+    if (io.sockets.adapter.rooms[room]) {
+      console.log(`Client ${client.id} wanted to open room ${room}, but it is already open.`);
+      fn({ ok: false, id: room });
+      return;
+    }
+
+    console.log('Client', client.id, 'opened room', room);
+
+    client.join(room);
+    fn({ ok: true, id: room });
   });
 
   /**
    * Join an existing game room
    * @listens join_room
    */
-  client.on('join_room', (name, fn) => {
-    if (io.sockets.adapter.rooms[`r_${name}`]
-      && io.sockets.adapter.rooms[`r_${name}`].length === 1) {
-      console.log('Client', client.id, 'joined room', `r_${name}`);
+  client.on('join_room', (room, fn) => {
+    if (io.sockets.adapter.rooms[room]
+      && io.sockets.adapter.rooms[room].length === 1) {
+      console.log('Client', client.id, 'joined room', room);
 
-      client.join(`r_${name}`);
+      client.join(room);
       fn(true);
 
-      client.to(`r_${name}`).emit('opponent_connected');
+      client.to(room).emit('opponent_connected');
     } else {
-      console.log('Client', client.id, 'could not join room', `r_${name}`);
+      console.log('Client', client.id, 'could not join room', room);
 
       fn(false);
     }
