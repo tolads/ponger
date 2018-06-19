@@ -129,6 +129,10 @@ io.on('connection', (client) => {
         };
 
         loop();
+
+        model.eventEmitter.on('collision', () => {
+          io.to(room).emit('collision');
+        });
       }
     }
   });

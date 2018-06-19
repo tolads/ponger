@@ -15,6 +15,7 @@ class PongerView {
   /** Initialize view */
   init() {
     this.model.init();
+    this.sound = new Audio('./sound.wav');
     this.started = false;
     this.playing = false;
 
@@ -88,9 +89,9 @@ class PongerView {
       window.addEventListener('blur', () => {
         this.playing = false;
       });
-    } else {
-      this.handleModelEvents();
     }
+
+    this.handleModelEvents();
 
     this.loop();
   }
@@ -107,6 +108,10 @@ class PongerView {
 
     document.addEventListener('disconnected', () => {
       this.playing = false;
+    });
+
+    document.addEventListener('collision', () => {
+      this.sound.play();
     });
   }
 
