@@ -50,6 +50,39 @@ class PongerView {
         });
       });
     }
+
+    this.handleVolume();
+  }
+
+  /**
+   * Handle turning volume on and off
+   */
+  handleVolume() {
+    const volumeOffBtn = document.getElementById('volume-off');
+    const volumeOnBtn = document.getElementById('volume-on');
+
+    volumeOnBtn.classList.add('hidden');
+    this.volume = false;
+
+    volumeOnBtn.addEventListener('click', () => {
+      volumeOffBtn.classList.remove('hidden');
+      volumeOnBtn.classList.add('hidden');
+      this.volume = false;
+    });
+
+    volumeOffBtn.addEventListener('click', () => {
+      volumeOffBtn.classList.add('hidden');
+      volumeOnBtn.classList.remove('hidden');
+      this.volume = true;
+    });
+
+    window.addEventListener('keypress', (event) => {
+      if (event.which === 109) { // M key
+        volumeOffBtn.classList.toggle('hidden');
+        volumeOnBtn.classList.toggle('hidden');
+        this.volume = !this.volume;
+      }
+    });
   }
 
   /**
@@ -111,7 +144,9 @@ class PongerView {
     });
 
     document.addEventListener('collision', () => {
-      this.sound.play();
+      if (this.volume) {
+        this.sound.play();
+      }
     });
   }
 
