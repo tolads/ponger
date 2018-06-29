@@ -2,7 +2,7 @@ const { PlayerBat, ComputerBat } = require('./bat');
 
 let EventEmitter;
 if (typeof window === 'undefined') {
-  EventEmitter = require('events');
+  EventEmitter = require('events'); // eslint-disable-line global-require
 }
 
 /** Class for Ponger model layer */
@@ -246,11 +246,11 @@ module.exports.PongerModel = class PongerModel {
       });
 
       if (bat.y - (bat.h / 2) < 0) {
-        bat.y = bat.h / 2;
+        bat.y = bat.h / 2; // eslint-disable-line no-param-reassign
       }
 
       if (bat.y + (bat.h / 2) > this.abstractHeight) {
-        bat.y = this.abstractHeight - (bat.h / 2);
+        bat.y = this.abstractHeight - (bat.h / 2); // eslint-disable-line no-param-reassign
       }
     });
   }
@@ -300,7 +300,7 @@ module.exports.PongerModel = class PongerModel {
 
         const dx = this.leftBat.x - this.ball.x;
         const dy = this.leftBat.y - this.ball.y;
-        this.ball.dir = Math.asin(-dy / Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2))) + Math.PI;
+        this.ball.dir = Math.asin(-dy / Math.sqrt((dx ** 2) + (dy ** 2))) + Math.PI;
       } else {
         this.points[0]++;
 
@@ -309,8 +309,8 @@ module.exports.PongerModel = class PongerModel {
 
         const dx = this.rightBat.x - this.ball.x;
         const dy = this.rightBat.y - this.ball.y;
-        this.ball.dir = Math.asin(dy / Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2)));
+        this.ball.dir = Math.asin(dy / Math.sqrt((dx ** 2) + (dy ** 2)));
       }
     }
   }
-}
+};

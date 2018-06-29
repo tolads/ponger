@@ -9,7 +9,9 @@ class AbstractBat {
    * @param {number} $0.w - width
    * @param {number} $0.h - height
    */
-  constructor({ x, y, v, w, h }) {
+  constructor({
+    x, y, v, w, h,
+  }) {
     this.x = x;
     this.y = y;
     this.v = v;
@@ -21,7 +23,7 @@ class AbstractBat {
    * Move the bat
    * @abstract
    */
-  move() {
+  move() { /* eslint-disable-line class-methods-use-this */
     throw new Error('Abstract method called!');
   }
 }
