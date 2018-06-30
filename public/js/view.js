@@ -52,6 +52,7 @@ class PongerView {
     }
 
     this.handleVolume();
+    this.handleTouch();
   }
 
   /**
@@ -85,6 +86,15 @@ class PongerView {
     });
   }
 
+  handleTouch() {
+    this.isTouching = false;
+
+    window.addEventListener('touchstart', function onFirstTouch() {
+      this.isTouching = true;
+      window.removeEventListener('touchstart', onFirstTouch, false);
+    }.bind(this));
+  }
+
   /**
    * Start a new game
    * @param {string} mode - game mode: singleplayer of twoplayer
@@ -101,8 +111,8 @@ class PongerView {
       this.model.keyUp(event.which);
     });
 
-    window.addEventListener('keypress', (event) => {
-      if (event.which === 32) {
+    const handlePause = (event) => {
+      if (event.which === 32 || event.type === 'touchstart') {
         switch (this.model.state) {
           case this.model.states.OFFLINE: {
             this.started = true;
@@ -116,6 +126,15 @@ class PongerView {
           default:
         }
       }
+    };
+
+    window.addEventListener('keypress', handlePause);
+    window.addEventListener('touchstart', handlePause);
+
+    window.addEventListener('deviceorientation', ({ alfa, beta, gamma }) => {
+      this.alfa = alfa;
+      this.beta = beta;
+      this.gamma = gamma;
     });
 
     if (this.model.state === this.model.states.OFFLINE) {
@@ -286,6 +305,9 @@ class PongerView {
    * @return {string}
    */
   getInfoText() {
+    if (this.gamma) {
+      return `${this.alfa} ${this.beta} ${this.gamma}`;
+    }
     switch (this.model.state) {
       case this.model.states.CONNECTING: return 'Connecting...';
       case this.model.states.CONNECTION_FAILED: return 'Connection failed.';
@@ -293,7 +315,9 @@ class PongerView {
         return 'Share the URL with your opponent to connect!';
       case this.model.states.WAITING_OPPONENT_TO_START: return 'Waiting opponent to start.';
       case this.model.states.OPPONENT_DISCONNECTED: return 'Opponent disconnected.';
-      default: return `Press "SPACE" to ${this.started ? 'continue' : 'start'}!`;
+      default: return (
+        `${this.isTouching ? 'Touch' : 'Press "SPACE"'} to ${this.started ? 'continue' : 'start'}!`
+      );
     }
   }
 }
