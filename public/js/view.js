@@ -137,7 +137,7 @@ class PongerView {
       } else if (this.firstOrientation - gamma > 15) {
         this.model.keyDown(40);
         this.model.keyUp(38);
-      } else if (this.firstOrientation - gamma < 15) {
+      } else if (this.firstOrientation - gamma < -15) {
         this.model.keyDown(38);
         this.model.keyUp(40);
       }
