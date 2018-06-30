@@ -131,10 +131,18 @@ class PongerView {
     window.addEventListener('keypress', handlePause);
     window.addEventListener('touchstart', handlePause);
 
-    window.addEventListener('deviceorientation', ({ alfa, beta, gamma }) => {
-      this.alfa = alfa;
-      this.beta = beta;
-      this.gamma = gamma;
+    window.addEventListener('deviceorientation', ({ gamma }) => {
+      if (!this.lastOrientation) {
+        this.lastOrientation = gamma;
+      } else if (this.lastOrientation - gamma < -15) {
+        this.model.keyDown(40);
+        this.model.keyUp(38);
+        this.lastOrientation = gamma;
+      } else if (this.lastOrientation - gamma > 15) {
+        this.model.keyDown(38);
+        this.model.keyUp(40);
+        this.lastOrientation = gamma;
+      }
     });
 
     if (this.model.state === this.model.states.OFFLINE) {
