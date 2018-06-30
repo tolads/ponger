@@ -132,13 +132,16 @@ class PongerView {
     window.addEventListener('touchstart', handlePause);
 
     window.addEventListener('deviceorientation', ({ gamma }) => {
-      if (!this.firstOrientation) {
+      if (this.firstOrientation === undefined) {
         this.firstOrientation = gamma;
       } else if (this.firstOrientation - gamma > 15) {
         this.model.keyDown(40);
         this.model.keyUp(38);
       } else if (this.firstOrientation - gamma < -15) {
         this.model.keyDown(38);
+        this.model.keyUp(40);
+      } else {
+        this.model.keyUp(38);
         this.model.keyUp(40);
       }
     });
