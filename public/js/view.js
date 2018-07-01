@@ -77,6 +77,9 @@ class PongerView {
       this.volume = true;
     });
 
+    volumeOnBtn.addEventListener('touchstart', (event) => { event.stopPropagation(); });
+    volumeOffBtn.addEventListener('touchstart', (event) => { event.stopPropagation(); });
+
     window.addEventListener('keypress', (event) => {
       if (event.which === 109) { // M key
         volumeOffBtn.classList.toggle('hidden');
