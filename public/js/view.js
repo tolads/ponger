@@ -145,12 +145,12 @@ class PongerView {
         this.lastTouches[touch.identifier] = touch;
 
         if (touch.clientY > window.innerHeight / 2) {
-          if (touch.clientX > window.innerHeight / 2) {
+          if (touch.clientX > window.innerWidth / 2) {
             this.model.keyDown(40);
           } else {
             this.model.keyDown(83);
           }
-        } else if (touch.clientX > window.innerHeight / 2) {
+        } else if (touch.clientX > window.innerWidth / 2) {
           this.model.keyDown(38);
         } else {
           this.model.keyDown(87);
@@ -168,12 +168,12 @@ class PongerView {
         if (!touch) return;
 
         if (touch.clientY > window.innerHeight / 2) {
-          if (touch.clientX > window.innerHeight / 2) {
+          if (touch.clientX > window.innerWidth / 2) {
             this.model.keyUp(40);
           } else {
             this.model.keyUp(83);
           }
-        } else if (touch.clientX > window.innerHeight / 2) {
+        } else if (touch.clientX > window.innerWidth / 2) {
           this.model.keyUp(38);
         } else {
           this.model.keyUp(87);
