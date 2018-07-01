@@ -103,6 +103,7 @@ class PongerView {
   start(mode, hash) {
     this.model.init(mode, hash);
     this.prevTime = new Date();
+    this.lastTouches = [];
 
     window.addEventListener('keydown', (event) => {
       this.model.keyDown(event.which);
@@ -116,7 +117,11 @@ class PongerView {
         switch (this.model.state) {
           case this.model.states.OFFLINE: {
             this.started = true;
-            this.playing = !this.playing;
+
+            // prevent moving the bat with the fired touch event
+            window.setTimeout(() => {
+              this.playing = event.type === 'touchstart' ? true : !this.playing;
+            }, 10);
             break;
           }
           case this.model.states.WAITING_PLAYER: {
@@ -131,18 +136,50 @@ class PongerView {
     window.addEventListener('keypress', handlePause);
     window.addEventListener('touchstart', handlePause);
 
-    window.addEventListener('deviceorientation', ({ gamma }) => {
-      if (this.firstOrientation === undefined) {
-        this.firstOrientation = gamma;
-      } else if (this.firstOrientation - gamma > 15) {
-        this.model.keyDown(40);
-        this.model.keyUp(38);
-      } else if (this.firstOrientation - gamma < -15) {
-        this.model.keyDown(38);
-        this.model.keyUp(40);
-      } else {
-        this.model.keyUp(38);
-        this.model.keyUp(40);
+    window.addEventListener('touchstart', (event) => {
+      if (!this.playing) return;
+
+      for (let i = 0; i < event.changedTouches.length; i++) {
+        const touch = event.changedTouches[i];
+
+        this.lastTouches[touch.identifier] = touch;
+
+        if (touch.clientY > window.innerHeight / 2) {
+          if (touch.clientX > window.innerHeight / 2) {
+            this.model.keyDown(40);
+          } else {
+            this.model.keyDown(83);
+          }
+        } else if (touch.clientX > window.innerHeight / 2) {
+          this.model.keyDown(38);
+        } else {
+          this.model.keyDown(87);
+        }
+      }
+    });
+
+    window.addEventListener('touchend', (event) => {
+      if (!this.playing) return;
+
+      for (let i = 0; i < event.changedTouches.length; i++) {
+        const touchEnd = event.changedTouches[i];
+        const touch = this.lastTouches[touchEnd.identifier];
+
+        if (!touch) return;
+
+        if (touch.clientY > window.innerHeight / 2) {
+          if (touch.clientX > window.innerHeight / 2) {
+            this.model.keyUp(40);
+          } else {
+            this.model.keyUp(83);
+          }
+        } else if (touch.clientX > window.innerHeight / 2) {
+          this.model.keyUp(38);
+        } else {
+          this.model.keyUp(87);
+        }
+
+        this.lastTouches[touchEnd.identifier] = undefined;
       }
     });
 
