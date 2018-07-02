@@ -87,6 +87,8 @@ class PongerView {
         this.volume = !this.volume;
       }
     });
+
+    this.sound.addEventListener('ended', () => { this.sound.currentTime = 0; });
   }
 
   handleTouch() {
