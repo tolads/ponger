@@ -9,6 +9,15 @@ const server = http.Server(app);
 const io = socketIO(server);
 const port = process.env.PORT || 3002;
 
+app.get('/cache.manifest', (req, res) => {
+  res.setHeader('content-type', 'text/cache-manifest');
+  if (process.env.NODE_ENV === 'production') {
+    res.sendFile(`${__dirname}/cache.manifest`);
+  } else {
+    res.end(`CACHE MANIFEST\n# ${new Date().getTime()}\nNETWORK:\n*\n`);
+  }
+});
+
 app.use(express.static('public'));
 
 server.listen(port, () => console.log(`Ponger app listening on port ${port}.`));

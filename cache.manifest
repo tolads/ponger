@@ -1,0 +1,17 @@
+CACHE MANIFEST
+# Version 00
+
+CACHE:
+/css/main.css
+/css/normalize.css
+
+images/volume-off.svg
+images/volume-on.svg
+
+/js/socket.io.js
+/js/bundle.js
+
+/sound.wav
+
+NETWORK:
+*
