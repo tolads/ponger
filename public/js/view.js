@@ -377,6 +377,8 @@ const view = new PongerView(model);
 view.init();
 
 // Reload the page when Application Cache has updated
-window.applicationCache.addEventListener('updateready', () => {
-  window.location.reload();
-});
+if (window.applicationCache) {
+  window.applicationCache.addEventListener('updateready', () => {
+    window.location.reload();
+  });
+}
