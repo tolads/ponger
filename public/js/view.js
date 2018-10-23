@@ -31,11 +31,8 @@ class PongerView {
 
       this.start('online', window.location.hash.substr(1));
 
-      return;
-    }
-
     // handle menu
-    if (menu) {
+    } else if (menu) {
       menu.classList.remove('hidden');
 
       menu.querySelectorAll('button').forEach((element, index) => {
