@@ -260,32 +260,37 @@ module.exports.PongerModel = class PongerModel {
    * @param {AbstractBat} bat - the bat to check
    */
   detectCollision(bat) {
-    if (Math.abs(bat.y - this.ball.y) < (bat.h / 2) + this.ball.r
-      && Math.abs(bat.x - this.ball.x) < (bat.w / 2) + this.ball.r) {
-      const insideX = (bat.w / 2) + this.ball.r - Math.abs(this.ball.x - bat.x);
-      const insideLen = insideX * Math.cos(this.ball.dir);
+    if (Math.abs(bat.y - this.ball.y) >= (bat.h / 2) + this.ball.r
+      || Math.abs(bat.x - this.ball.x) >= (bat.w / 2) + this.ball.r) {
+      return;
+    }
 
-      this.ball.x += insideX * (this.ball.x < bat.x ? -1 : 1);
+    const insideX = (bat.w / 2) + this.ball.r - Math.abs(this.ball.x - bat.x);
+    const insideLen = Math.abs(insideX * Math.cos(this.ball.dir));
 
-      const maxDist = (bat.h / 2) + this.ball.r;
-      const dist = Math.abs(bat.y - this.ball.y);
-      this.ball.dir = dist / maxDist * Math.PI / 4;
+    // place ball next to bat to the position where they would collide
+    this.ball.x += Math.cos(this.ball.dir + Math.PI) * insideLen;
+    this.ball.y += Math.sin(this.ball.dir + Math.PI) * insideLen;
 
-      if (bat.y > this.ball.y) {
-        this.ball.dir *= -1;
-      }
-      if (this.ball.x < bat.x) {
-        this.ball.dir = Math.PI - this.ball.dir;
-      }
+    const maxDist = (bat.h / 2) + this.ball.r;
+    const dist = Math.abs(bat.y - this.ball.y);
+    this.ball.dir = dist / maxDist * Math.PI / 4;
 
-      this.ball.x += Math.cos(this.ball.dir) * insideLen;
-      this.ball.y += Math.sin(this.ball.dir) * insideLen;
+    if (bat.y > this.ball.y) {
+      this.ball.dir *= -1;
+    }
+    if (this.ball.x < bat.x) {
+      this.ball.dir = Math.PI - this.ball.dir;
+    }
 
-      if (typeof window !== 'undefined') {
-        document.dispatchEvent(this.collisionEvent);
-      } else {
-        this.eventEmitter.emit('collision');
-      }
+    // move the ball with the distance it is inside the bat
+    this.ball.x += Math.cos(this.ball.dir) * insideLen;
+    this.ball.y += Math.sin(this.ball.dir) * insideLen;
+
+    if (typeof window !== 'undefined') {
+      document.dispatchEvent(this.collisionEvent);
+    } else {
+      this.eventEmitter.emit('collision');
     }
   }
 
