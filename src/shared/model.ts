@@ -6,7 +6,26 @@ if (typeof window === 'undefined') {
 }
 
 /** Class for Ponger model layer */
-module.exports.PongerModel = class PongerModel {
+export class PongerModel {
+  abstractWidth: number;
+  abstractHeight: number;
+  coefficient: number;
+  states: any;
+  state: number;
+  openRoomEvent: CustomEvent;
+  playingOnlineEvent: CustomEvent;
+  disconnectedEvent: CustomEvent;
+  collisionEvent: CustomEvent;
+  eventEmitter: any;
+  ball: any;
+  leftBat: any;
+  rightBat: any;
+  keys: any;
+  points: any;
+  socket: any;
+  roomId: any;
+  opponentHasStarted: boolean;
+
   /** Create a Ponger model */
   constructor() {
     this.abstractWidth = 16;
@@ -104,7 +123,7 @@ module.exports.PongerModel = class PongerModel {
     this.state = this.states.CONNECTING;
     this.opponentHasStarted = false;
 
-    this.socket = window.io && window.io();
+    this.socket = (window as any).io && (window as any).io();
 
     if (!this.socket) {
       this.state = this.states.CONNECTION_FAILED;

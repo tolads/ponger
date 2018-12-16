@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "outDir": "../../dist/public/js",
+    "allowJs": true,
+    "lib": ["es6", "dom"],
+  },
+  "include": [
+    "./**/*",
+  ],
+}

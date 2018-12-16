@@ -1,14 +1,13 @@
 /** Abstract class representing a bat */
 class AbstractBat {
-  /**
-   * Create a bat
-   * @param {Object} $0
-   * @param {number} $0.x - X position
-   * @param {number} $0.y - Y position
-   * @param {number} $0.v - speed
-   * @param {number} $0.w - width
-   * @param {number} $0.h - height
-   */
+  x: number;
+  y: number;
+  v: number;
+  w: number;
+  h: number;
+  upKey: number;
+  downKey: number;
+
   constructor({
     x, y, v, w, h,
   }) {
@@ -23,7 +22,7 @@ class AbstractBat {
    * Move the bat
    * @abstract
    */
-  move() { /* eslint-disable-line class-methods-use-this */
+  move({}) { /* eslint-disable-line class-methods-use-this */
     throw new Error('Abstract method called!');
   }
 }
@@ -46,14 +45,7 @@ module.exports.PlayerBat = class PlayerBat extends AbstractBat {
     this.downKey = params.downKey;
   }
 
-  /**
-   * Move player's bat
-   * @param {Object} $0
-   * @param {number} $0.dt - elapsed time
-   * @param {number} $0.coefficient - coefficient used with speed
-   * @param {Set<number>} $0.keys - set of currently pressed keys
-   */
-  move({ dt, coefficient, keys }) {
+  move({ dt, coefficient, keys }: { dt: number, coefficient: number, keys: any }) {
     if (keys.has(this.upKey)) {
       this.y -= this.v * dt * coefficient;
     } else if (keys.has(this.downKey)) {
@@ -67,14 +59,7 @@ module.exports.PlayerBat = class PlayerBat extends AbstractBat {
  * @extends AbstractBat
  */
 module.exports.ComputerBat = class ComputerBat extends AbstractBat {
-  /**
-   * Move computer's bat
-   * @param {Object} $0
-   * @param {number} $0.dt - elapsed time
-   * @param {number} $0.coefficient - coefficient used with speed
-   * @param {number} $0.ballY - current Y position of the ball
-   */
-  move({ dt, coefficient, ballY }) {
+  move({ dt, coefficient, ballY }: { dt: number, coefficient: number, ballY: number }) {
     if (ballY < this.y - 0.05) {
       this.y -= this.v * dt * coefficient;
     } else if (ballY > this.y + 0.05) {

@@ -2,7 +2,8 @@
 const express = require('express');
 const http = require('http');
 const socketIO = require('socket.io');
-const { PongerModel } = require('./public/js/model');
+const { PongerModel } = require('../shared/model');
+const path = require('path');
 
 const app = express();
 const server = http.Server(app);
@@ -18,7 +19,7 @@ app.get('/cache.manifest', (req, res) => {
   }
 });
 
-app.use(express.static('public'));
+app.use(express.static(path.join(__dirname, 'dist', 'public')));
 
 server.listen(port, () => console.log(`Ponger app listening on port ${port}.`));
 
@@ -32,7 +33,7 @@ const startedGames = new Map();
  * @param {Date} prevTime - when did the loop run previously
  */
 const loopInner = (room, model, prevTime) => {
-  const dt = new Date() - prevTime;
+  const dt = Date.now() - prevTime;
   model.updateBall(dt);
   model.updateBats(dt);
   model.detectCollision(model.leftBat);

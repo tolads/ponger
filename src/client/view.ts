@@ -1,7 +1,18 @@
-import { PongerModel } from './model';
+import { PongerModel } from '../shared/model';
 
 /** Class for Ponger view layer */
 class PongerView {
+  model: PongerModel;
+  canvas: any;
+  context: any;
+  sound: any;
+  playing: any;
+  started: any;
+  volume: any;
+  lastTouches: any;
+  prevTime: any;
+  isTouching: any;
+
   /**
    * Create a Ponger view
    * @param {PongerModel} model - dependency injection
@@ -14,7 +25,7 @@ class PongerView {
 
   /** Initialize view */
   init() {
-    this.model.init();
+    this.model.init(undefined, undefined);
     this.sound = new Audio('./sound.wav');
     this.started = false;
     this.playing = false;
@@ -41,9 +52,9 @@ class PongerView {
         element.addEventListener('click', (event) => {
           menu.classList.add('hidden');
 
-          const btn = event.target && event.target.closest && event.target.closest('button');
+          const btn = event.target && (event.target as any).closest && (event.target as any).closest('button');
           if (btn) btn.blur();
-          this.start(btn && btn.value);
+          this.start(btn && btn.value, undefined);
         });
       });
     }
@@ -234,7 +245,7 @@ class PongerView {
     window.requestAnimationFrame(() => { this.loop(); });
 
     if (this.playing) {
-      const dt = new Date() - this.prevTime;
+      const dt = Date.now() - this.prevTime;
 
       this.model.updateBall(dt);
       if (this.model.state === this.model.states.OFFLINE) {
@@ -351,9 +362,6 @@ class PongerView {
    * @return {string}
    */
   getInfoText() {
-    if (this.gamma) {
-      return `${this.alfa} ${this.beta} ${this.gamma}`;
-    }
     switch (this.model.state) {
       case this.model.states.CONNECTING: return 'Connecting...';
       case this.model.states.CONNECTION_FAILED: return 'Connection failed.';
