@@ -4,11 +4,11 @@
   "description": "Pong game in JavaScript",
   "author": "Tamas Laszlo",
   "scripts": {
-    "watch": "cd ./src/client && webpack --watch",
-    "postinstall": "npm run build-client",
-    "lint": "tslint -c tslint.json 'src/**/*.ts' 'src/**/*.tsx'",
+    "postinstall": "npm run build",
+    "lint": "tslint -c tslint.json --project src/client/tsconfig.json 'src/**/*.ts' 'src/**/*.tsx'",
     "start": "node ./dist/server/index.js",
     "build-client": "cd ./src/client && webpack -p",
+    "dev-client": "cd ./src/client && webpack --watch",
     "build-server": "tsc -p ./src/server",
     "dev-server": "tsc-watch -p ./src/server --onSuccess \"node ./dist/server/index.js\"",
     "dev": "concurrently --prefix \"[{name}]\" --names \"SERVER,CLIENT\" -c \"bgBlue.bold,bgGreen.bold\" \"npm run dev-server\" \"npm run dev-client\"",
@@ -19,7 +19,7 @@
     "socket.io": "^2.1.1"
   },
   "devDependencies": {
-    "@types/node": "^10.12.12",
+    "@types/node": "^10.12.15",
     "awesome-typescript-loader": "^5.2.1",
     "concurrently": "^4.1.0",
     "eslint": "^5.7.0",
@@ -28,8 +28,10 @@
     "eslint-plugin-jsx-a11y": "^6.1.2",
     "eslint-plugin-react": "^7.11.1",
     "source-map-loader": "^0.2.4",
-    "ts-lint": "^4.5.1",
     "ts-loader": "^5.3.1",
+    "tsc-watch": "^1.0.31",
+    "tslint": "^5.12.0",
+    "tslint-config-airbnb": "^5.11.1",
     "typescript": "^3.2.1",
     "webpack": "^4.22.0",
     "webpack-cli": "^3.1.2"

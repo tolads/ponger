@@ -22,7 +22,7 @@ class AbstractBat {
    * Move the bat
    * @abstract
    */
-  move({}) { /* eslint-disable-line class-methods-use-this */
+  move({}) {
     throw new Error('Abstract method called!');
   }
 }

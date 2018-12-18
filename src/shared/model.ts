@@ -1,8 +1,8 @@
 const { PlayerBat, ComputerBat } = require('./bat');
 
-let EventEmitter;
+let EventEmitter; // tslint:disable-line:variable-name
 if (typeof window === 'undefined') {
-  EventEmitter = require('events'); // eslint-disable-line global-require
+  EventEmitter = require('events');
 }
 
 /** Class for Ponger model layer */
@@ -265,11 +265,11 @@ export class PongerModel {
       });
 
       if (bat.y - (bat.h / 2) < 0) {
-        bat.y = bat.h / 2; // eslint-disable-line no-param-reassign
+        bat.y = bat.h / 2;
       }
 
       if (bat.y + (bat.h / 2) > this.abstractHeight) {
-        bat.y = this.abstractHeight - (bat.h / 2); // eslint-disable-line no-param-reassign
+        bat.y = this.abstractHeight - (bat.h / 2);
       }
     });
   }
@@ -337,4 +337,4 @@ export class PongerModel {
       }
     }
   }
-};
+}

@@ -52,7 +52,9 @@ class PongerView {
         element.addEventListener('click', (event) => {
           menu.classList.add('hidden');
 
-          const btn = event.target && (event.target as any).closest && (event.target as any).closest('button');
+          const btn = event.target
+            && (event.target as any).closest
+            && (event.target as any).closest('button');
           if (btn) btn.blur();
           this.start(btn && btn.value, undefined);
         });
@@ -130,9 +132,10 @@ class PongerView {
             this.started = true;
 
             // prevent moving the bat with the fired touch event
-            window.setTimeout(() => {
-              this.playing = event.type === 'touchstart' ? true : !this.playing;
-            }, 10);
+            window.setTimeout(
+              () => { this.playing = event.type === 'touchstart' ? true : !this.playing; },
+              10,
+            );
             break;
           }
           case this.model.states.WAITING_PLAYER: {
