@@ -7,7 +7,7 @@ const path = require('path');
 
 const app = express();
 const server = http.Server(app);
-const io = socketIO(server);
+const socketIOserver = socketIO(server);
 const port = process.env.PORT || 3002;
 
 app.get('/cache.manifest', (req, res) => {
@@ -41,7 +41,7 @@ const loopInner = (room, model, prevTime) => {
   model.detectCollision(model.rightBat);
   model.detectPoint();
 
-  io.to(room).emit('update_state', {
+  socketIOserver.to(room).emit('update_state', {
     ball: model.ball,
     leftBat: model.leftBat,
     rightBat: model.rightBat,
@@ -71,7 +71,7 @@ const moveBat = (event, client) => {
 };
 
 /** Client connection */
-io.on('connection', (client) => {
+socketIOserver.on('connection', (client) => {
   /**
    * Open new game room
    * @listens open_room
@@ -79,7 +79,7 @@ io.on('connection', (client) => {
   client.on('open_room', (name, fn) => {
     const room = `r_${client.id}`;
 
-    if (io.sockets.adapter.rooms[room]) {
+    if (socketIOserver.sockets.adapter.rooms[room]) {
       console.log(`Client ${client.id} wanted to open room ${room}, but it is already open.`);
       fn({ ok: false, id: room });
       return;
@@ -96,8 +96,8 @@ io.on('connection', (client) => {
    * @listens join_room
    */
   client.on('join_room', (room, fn) => {
-    if (io.sockets.adapter.rooms[room]
-      && io.sockets.adapter.rooms[room].length === 1) {
+    if (socketIOserver.sockets.adapter.rooms[room]
+      && socketIOserver.sockets.adapter.rooms[room].length === 1) {
       console.log('Client', client.id, 'joined room', room);
 
       client.join(room);
@@ -143,7 +143,7 @@ io.on('connection', (client) => {
         loop();
 
         model.eventEmitter.on('collision', () => {
-          io.to(room).emit('collision');
+          socketIOserver.to(room).emit('collision');
         });
       }
     }
@@ -183,7 +183,7 @@ io.on('connection', (client) => {
     console.log('Client', client.id, 'disconnected from room', room);
 
     if (room && startedGames.has(room)) {
-      io.to(room).emit('opponent_disconnected');
+      socketIOserver.to(room).emit('opponent_disconnected');
       startedGames.delete(room);
     }
   });

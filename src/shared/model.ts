@@ -1,3 +1,5 @@
+import * as io from 'socket.io-client';
+
 const { PlayerBat, ComputerBat } = require('./bat');
 
 let EventEmitter; // tslint:disable-line:variable-name
@@ -123,7 +125,7 @@ export class PongerModel {
     this.state = this.states.CONNECTING;
     this.opponentHasStarted = false;
 
-    this.socket = (window as any).io && (window as any).io();
+    this.socket = io();
 
     if (!this.socket) {
       this.state = this.states.CONNECTION_FAILED;
