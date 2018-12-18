@@ -5,4 +5,5 @@ node_modules
 bundle.js*
 .vscode/
 /dist/*
+!/dist/cache.manifest
 !/dist/public

@@ -14,12 +14,13 @@ app.get('/cache.manifest', (req, res) => {
   res.setHeader('content-type', 'text/cache-manifest');
   if (process.env.NODE_ENV === 'production') {
     res.sendFile(`${__dirname}/cache.manifest`);
+    res.sendFile(path.join(__dirname, '..', 'cache.manifest'));
   } else {
     res.end(`CACHE MANIFEST\n# ${new Date().getTime()}\nNETWORK:\n*\n`);
   }
 });
 
-app.use(express.static(path.join(__dirname, 'dist', 'public')));
+app.use(express.static(path.join(__dirname, '..', 'public')));
 
 server.listen(port, () => console.log(`Ponger app listening on port ${port}.`));
 
