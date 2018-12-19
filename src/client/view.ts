@@ -1,4 +1,4 @@
-import PongerModel from '../shared/model';
+import PongerModel, { States } from '../shared/model';
 
 /**
  * Class for Ponger view layer
@@ -125,7 +125,7 @@ class PongerView {
     const handlePause = (event) => {
       if (event.which === 32 || event.type === 'touchstart') {
         switch (this.model.state) {
-          case this.model.states.OFFLINE: {
+          case States.OFFLINE: {
             this.started = true;
 
             // prevent moving the bat with the fired touch event
@@ -135,7 +135,7 @@ class PongerView {
             );
             break;
           }
-          case this.model.states.WAITING_PLAYER: {
+          case States.WAITING_PLAYER: {
             this.model.playerStarted();
             break;
           }
@@ -194,7 +194,7 @@ class PongerView {
       }
     });
 
-    if (this.model.state === this.model.states.OFFLINE) {
+    if (this.model.state === States.OFFLINE) {
       window.addEventListener('blur', () => {
         this.playing = false;
       });
@@ -248,7 +248,7 @@ class PongerView {
       const dt = Date.now() - this.prevTime;
 
       this.model.updateBall(dt);
-      if (this.model.state === this.model.states.OFFLINE) {
+      if (this.model.state === States.OFFLINE) {
         this.model.updateBats(dt);
         this.model.detectCollision(this.model.leftBat);
         this.model.detectCollision(this.model.rightBat);
@@ -360,12 +360,12 @@ class PongerView {
   /** Return info text about current state */
   getInfoText() : string {
     switch (this.model.state) {
-      case this.model.states.CONNECTING: return 'Connecting...';
-      case this.model.states.CONNECTION_FAILED: return 'Connection failed.';
-      case this.model.states.WAITING_OPPONENT_TO_CONNECT:
+      case States.CONNECTING: return 'Connecting...';
+      case States.CONNECTION_FAILED: return 'Connection failed.';
+      case States.WAITING_OPPONENT_TO_CONNECT:
         return 'Share the URL with your opponent to connect!';
-      case this.model.states.WAITING_OPPONENT_TO_START: return 'Waiting opponent to start.';
-      case this.model.states.OPPONENT_DISCONNECTED: return 'Opponent disconnected.';
+      case States.WAITING_OPPONENT_TO_START: return 'Waiting opponent to start.';
+      case States.OPPONENT_DISCONNECTED: return 'Opponent disconnected.';
       default: return (
         `${this.isTouching ? 'Touch' : 'Press "SPACE"'} to ${this.started ? 'continue' : 'start'}!`
       );

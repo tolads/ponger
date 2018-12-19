@@ -1,5 +1,18 @@
+interface AbstractBatConstructorParams {
+  x: number;
+  y: number;
+  v: number;
+  w: number;
+  h: number;
+}
+
+interface BatProperties extends AbstractBatConstructorParams {
+  upKey: number;
+  downKey: number;
+}
+
 /** Abstract class representing a bat */
-export class AbstractBat {
+export class AbstractBat implements BatProperties {
   x: number;
   y: number;
   v: number;
@@ -10,7 +23,7 @@ export class AbstractBat {
 
   constructor({
     x, y, v, w, h,
-  }: { x: number, y: number, v: number, w: number, h: number }) {
+  }: AbstractBatConstructorParams) {
     this.x = x;
     this.y = y;
     this.v = v;
@@ -34,18 +47,10 @@ export class PlayerBat extends AbstractBat {
   /**
    * Create a player's bat
    * @param {Object} params
-   * @param {number} params.upKey - key code which moves bat upwards
-   * @param {number} params.downKey - key code which moves bat downwards
+   * @param params.upKey - key code which moves bat upwards
+   * @param params.downKey - key code which moves bat downwards
    */
-  constructor(params: {
-    x: number,
-    y: number,
-    v: number,
-    w: number,
-    h: number,
-    upKey: number,
-    downKey: number,
-  }) {
+  constructor(params: BatProperties) {
     super(params);
 
     this.upKey = params.upKey;

@@ -7,6 +7,17 @@ if (typeof window === 'undefined') {
   EventEmitter = require('events');
 }
 
+export enum States {
+  OFFLINE = 0,
+  CONNECTING = 1,
+  CONNECTION_FAILED = 2,
+  WAITING_OPPONENT_TO_CONNECT = 3,
+  WAITING_PLAYER = 4,
+  WAITING_OPPONENT_TO_START = 5,
+  PLAYING = 6,
+  OPPONENT_DISCONNECTED = 7,
+}
+
 /**
  * Class for Ponger model layer
  */
@@ -14,8 +25,7 @@ export default class PongerModel {
   abstractWidth: number;
   abstractHeight: number;
   coefficient: number;
-  states: any;
-  state: number;
+  state: States;
   openRoomEvent: CustomEvent;
   playingOnlineEvent: CustomEvent;
   disconnectedEvent: CustomEvent;
@@ -25,7 +35,7 @@ export default class PongerModel {
   leftBat: AbstractBat;
   rightBat: AbstractBat;
   keys: Set<number>;
-  points: number[];
+  points: [number, number];
   socket: SocketIOClient.Socket;
   roomId: string;
   opponentHasStarted: boolean;
@@ -35,17 +45,6 @@ export default class PongerModel {
     this.abstractWidth = 16;
     this.abstractHeight = 9;
     this.coefficient = 1e-4;
-
-    this.states = {
-      OFFLINE: 0,
-      CONNECTING: 1,
-      CONNECTION_FAILED: 2,
-      WAITING_OPPONENT_TO_CONNECT: 3,
-      WAITING_PLAYER: 4,
-      WAITING_OPPONENT_TO_START: 5,
-      PLAYING: 6,
-      OPPONENT_DISCONNECTED: 7,
-    };
 
     if (typeof window !== 'undefined') {
       this.openRoomEvent = new CustomEvent('open_room');
@@ -71,7 +70,7 @@ export default class PongerModel {
     // 5 = waiting opponent to start
     // 6 = playing
     // 7 = opponent disconnected
-    this.state = this.states.OFFLINE;
+    this.state = States.OFFLINE;
 
     if (mode === 'online') {
       this.connect(hash);
@@ -124,39 +123,39 @@ export default class PongerModel {
    * @param hash - id of the room to connect
    */
   connect(hash: string) {
-    this.state = this.states.CONNECTING;
+    this.state = States.CONNECTING;
     this.opponentHasStarted = false;
 
     this.socket = io();
 
     if (!this.socket) {
-      this.state = this.states.CONNECTION_FAILED;
+      this.state = States.CONNECTION_FAILED;
       return;
     }
 
-    this.socket.on('connect_error', () => { this.state = this.states.CONNECTION_FAILED; });
-    this.socket.on('connect_timeout', () => { this.state = this.states.CONNECTION_FAILED; });
+    this.socket.on('connect_error', () => { this.state = States.CONNECTION_FAILED; });
+    this.socket.on('connect_timeout', () => { this.state = States.CONNECTION_FAILED; });
 
     if (!hash) {
       this.socket.emit('open_room', undefined, ({ ok, id }) => {
         if (ok) {
           this.roomId = id;
           document.dispatchEvent(this.openRoomEvent);
-          this.state = this.states.WAITING_OPPONENT_TO_CONNECT;
+          this.state = States.WAITING_OPPONENT_TO_CONNECT;
         } else {
-          this.state = this.states.CONNECTION_FAILED;
+          this.state = States.CONNECTION_FAILED;
         }
       });
 
       this.socket.on('opponent_connected', () => {
-        this.state = this.states.WAITING_PLAYER;
+        this.state = States.WAITING_PLAYER;
       });
     } else {
       this.socket.emit('join_room', hash, (data) => {
         if (data) {
-          this.state = this.states.WAITING_PLAYER;
+          this.state = States.WAITING_PLAYER;
         } else {
-          this.state = this.states.CONNECTION_FAILED;
+          this.state = States.CONNECTION_FAILED;
         }
       });
     }
@@ -164,8 +163,8 @@ export default class PongerModel {
     this.socket.on('opponent_started', () => {
       this.opponentHasStarted = true;
 
-      if (this.state === this.states.WAITING_OPPONENT_TO_START) {
-        this.state = this.states.PLAYING;
+      if (this.state === States.WAITING_OPPONENT_TO_START) {
+        this.state = States.PLAYING;
         document.dispatchEvent(this.playingOnlineEvent);
       }
     });
@@ -182,12 +181,12 @@ export default class PongerModel {
     });
 
     this.socket.on('opponent_disconnected', () => {
-      this.state = this.states.OPPONENT_DISCONNECTED;
+      this.state = States.OPPONENT_DISCONNECTED;
       document.dispatchEvent(this.disconnectedEvent);
     });
 
     this.socket.on('disconnect', () => {
-      this.state = this.states.CONNECTION_FAILED;
+      this.state = States.CONNECTION_FAILED;
       document.dispatchEvent(this.disconnectedEvent);
     });
 
@@ -196,7 +195,7 @@ export default class PongerModel {
 
   /** User pressed key */
   keyDown(key: number) {
-    if (this.state === this.states.PLAYING && !this.keys.has(key)) {
+    if (this.state === States.PLAYING && !this.keys.has(key)) {
       if (key === 38) {
         this.socket.emit('go_up');
       } else if (key === 40) {
@@ -211,7 +210,7 @@ export default class PongerModel {
   keyUp(key: number) {
     this.keys.delete(key);
 
-    if (this.state === this.states.PLAYING) {
+    if (this.state === States.PLAYING) {
       if (key === 38) {
         this.socket.emit('stop_going_up');
       } else if (key === 40) {
@@ -225,9 +224,9 @@ export default class PongerModel {
     this.socket.emit('start');
 
     if (!this.opponentHasStarted) {
-      this.state = this.states.WAITING_OPPONENT_TO_START;
+      this.state = States.WAITING_OPPONENT_TO_START;
     } else {
-      this.state = this.states.PLAYING;
+      this.state = States.PLAYING;
       document.dispatchEvent(this.playingOnlineEvent);
     }
   }
