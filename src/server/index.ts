@@ -15,7 +15,6 @@ const port = process.env.PORT || 3002;
 app.get('/cache.manifest', (req, res) => {
   res.setHeader('content-type', 'text/cache-manifest');
   if (process.env.NODE_ENV === 'production') {
-    res.sendFile(`${__dirname}/cache.manifest`);
     res.sendFile(path.join(__dirname, '..', 'cache.manifest'));
   } else {
     res.end(`CACHE MANIFEST\n# ${Date.now()}\nNETWORK:\n*\n`);
