@@ -19,7 +19,9 @@
     "socket.io": "^2.2.0"
   },
   "devDependencies": {
+    "@types/express": "^4.16.0",
     "@types/node": "^10.12.15",
+    "@types/socket.io": "^2.1.2",
     "@types/socket.io-client": "^1.4.32",
     "awesome-typescript-loader": "^5.2.1",
     "concurrently": "^4.1.0",

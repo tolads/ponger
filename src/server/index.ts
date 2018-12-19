@@ -1,9 +1,11 @@
 /* tslint:disable:no-console */
-const express = require('express');
 const http = require('http');
-const socketIO = require('socket.io');
-const { PongerModel } = require('../shared/model');
 const path = require('path');
+
+import * as express from 'express';
+import * as socketIO from 'socket.io';
+
+import PongerModel from '../shared/model';
 
 const app = express();
 const server = http.Server(app);
@@ -16,7 +18,7 @@ app.get('/cache.manifest', (req, res) => {
     res.sendFile(`${__dirname}/cache.manifest`);
     res.sendFile(path.join(__dirname, '..', 'cache.manifest'));
   } else {
-    res.end(`CACHE MANIFEST\n# ${new Date().getTime()}\nNETWORK:\n*\n`);
+    res.end(`CACHE MANIFEST\n# ${Date.now()}\nNETWORK:\n*\n`);
   }
 });
 
@@ -24,16 +26,15 @@ app.use(express.static(path.join(__dirname, '..', 'public')));
 
 server.listen(port, () => console.log(`Ponger app listening on port ${port}.`));
 
-/** @type {Map<string, {{model: PongerModel, player1: String}}>} */
-const startedGames = new Map();
+const startedGames = new Map<string, {model: PongerModel, player1: string}>();
 
 /**
  * Main game loop body
- * @param {string} room - socket room in which the game is played
- * @param {PongerModel} model - used model instance
- * @param {Date} prevTime - when did the loop run previously
+ * @param room - socket room in which the game is played
+ * @param model - used model instance
+ * @param prevTime - when did the loop run previously
  */
-const loopInner = (room, model, prevTime) => {
+const loopInner = (room: string, model: PongerModel, prevTime: number) => {
   const dt = Date.now() - prevTime;
   model.updateBall(dt);
   model.updateBats(dt);
@@ -51,10 +52,10 @@ const loopInner = (room, model, prevTime) => {
 
 /**
  * Move bat according to query
- * @param {string} event - event triggered
- * @param {Socket} client - client who triggered the event
+ * @param event - event triggered
+ * @param client - client who triggered the event
  */
-const moveBat = (event, client) => {
+const moveBat = (event: string, client: SocketIO.Socket) => {
   const room = Object.keys(client.rooms).find(element => element.startsWith('r_'));
 
   if (room) {
@@ -130,14 +131,14 @@ socketIOserver.on('connection', (client) => {
 
         const { model } = startedGames.get(room);
         model.init('twoplayer');
-        let prevTime = new Date();
+        let prevTime = Date.now();
 
         const loop = () => {
           if (startedGames.has(room)) setTimeout(() => loop(), 30);
 
           loopInner(room, model, prevTime);
 
-          prevTime = new Date();
+          prevTime = Date.now();
         };
 
         loop();

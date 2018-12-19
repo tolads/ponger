@@ -1,14 +1,16 @@
 import * as io from 'socket.io-client';
 
-const { PlayerBat, ComputerBat } = require('./bat');
+import { AbstractBat, PlayerBat, ComputerBat } from './bat';
 
 let EventEmitter; // tslint:disable-line:variable-name
 if (typeof window === 'undefined') {
   EventEmitter = require('events');
 }
 
-/** Class for Ponger model layer */
-export class PongerModel {
+/**
+ * Class for Ponger model layer
+ */
+export default class PongerModel {
   abstractWidth: number;
   abstractHeight: number;
   coefficient: number;
@@ -19,13 +21,13 @@ export class PongerModel {
   disconnectedEvent: CustomEvent;
   collisionEvent: CustomEvent;
   eventEmitter: any;
-  ball: any;
-  leftBat: any;
-  rightBat: any;
-  keys: any;
-  points: any;
-  socket: any;
-  roomId: any;
+  ball: {x: number, y: number, v: number, r: number, dir: number};
+  leftBat: AbstractBat;
+  rightBat: AbstractBat;
+  keys: Set<number>;
+  points: number[];
+  socket: SocketIOClient.Socket;
+  roomId: string;
   opponentHasStarted: boolean;
 
   /** Create a Ponger model */
@@ -57,10 +59,10 @@ export class PongerModel {
 
   /**
    * Initialize model
-   * @param {string} [mode=singleplayer] - game mode: singleplayer of twoplayer
-   * @param {string} hash - id of the room to connect
+   * @param mode - game mode: singleplayer of twoplayer
+   * @param hash - id of the room to connect
    */
-  init(mode = 'singleplayer', hash) {
+  init(mode: string = 'singleplayer', hash?: string) {
     // 0 = offline
     // 1 = connecting
     // 2 = connection failed
@@ -113,15 +115,15 @@ export class PongerModel {
       downKey: 40,
     });
 
-    this.keys = new Set();
+    this.keys = new Set<number>();
     this.points = [0, 0];
   }
 
   /**
    * Connect to server
-   * @param {string} hash - id of the room to connect
+   * @param hash - id of the room to connect
    */
-  connect(hash) {
+  connect(hash: string) {
     this.state = this.states.CONNECTING;
     this.opponentHasStarted = false;
 
@@ -192,11 +194,8 @@ export class PongerModel {
     this.socket.on('collision', () => { document.dispatchEvent(this.collisionEvent); });
   }
 
-  /**
-   * User pressed key
-   * @param {number} key - pressed key
-   */
-  keyDown(key) {
+  /** User pressed key */
+  keyDown(key: number) {
     if (this.state === this.states.PLAYING && !this.keys.has(key)) {
       if (key === 38) {
         this.socket.emit('go_up');
@@ -208,11 +207,8 @@ export class PongerModel {
     this.keys.add(key);
   }
 
-  /**
-   * User released key
-   * @param {number} key - pressed key
-   */
-  keyUp(key) {
+  /** User released key */
+  keyUp(key: number) {
     this.keys.delete(key);
 
     if (this.state === this.states.PLAYING) {
@@ -236,11 +232,8 @@ export class PongerModel {
     }
   }
 
-  /**
-   * Update ball position
-   * @param {number} dt - elapsed time
-   */
-  updateBall(dt) {
+  /** Update ball position */
+  updateBall(dt: number) {
     this.ball.x += Math.cos(this.ball.dir) * this.ball.v * dt * this.coefficient;
     this.ball.y += Math.sin(this.ball.dir) * this.ball.v * dt * this.coefficient;
 
@@ -253,11 +246,8 @@ export class PongerModel {
     }
   }
 
-  /**
-   * Update bats's position
-   * @param {number} dt - elapsed time
-   */
-  updateBats(dt) {
+  /** Update bats's position */
+  updateBats(dt: number) {
     [this.leftBat, this.rightBat].forEach((bat) => {
       bat.move({
         dt,
@@ -276,11 +266,8 @@ export class PongerModel {
     });
   }
 
-  /**
-   * Detect collision between a bat and the ball
-   * @param {AbstractBat} bat - the bat to check
-   */
-  detectCollision(bat) {
+  /** Detect collision between a bat and the ball */
+  detectCollision(bat: AbstractBat) {
     if (Math.abs(bat.y - this.ball.y) >= (bat.h / 2) + this.ball.r
       || Math.abs(bat.x - this.ball.x) >= (bat.w / 2) + this.ball.r) {
       return;

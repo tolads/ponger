@@ -1,31 +1,30 @@
-import { PongerModel } from '../shared/model';
+import PongerModel from '../shared/model';
 
-/** Class for Ponger view layer */
+/**
+ * Class for Ponger view layer
+ */
 class PongerView {
   model: PongerModel;
-  canvas: any;
-  context: any;
-  sound: any;
-  playing: any;
-  started: any;
-  volume: any;
-  lastTouches: any;
-  prevTime: any;
-  isTouching: any;
+  canvas: HTMLCanvasElement;
+  context: CanvasRenderingContext2D;
+  sound: HTMLAudioElement;
+  playing: boolean;
+  started: boolean;
+  volume: boolean;
+  lastTouches: Touch[];
+  prevTime: number;
+  isTouching: boolean;
 
-  /**
-   * Create a Ponger view
-   * @param {PongerModel} model - dependency injection
-   */
-  constructor(model) {
+  /** Create a Ponger view */
+  constructor(model: PongerModel) {
     this.model = model;
-    this.canvas = document.getElementById('canvas');
+    this.canvas = document.getElementById('canvas') as HTMLCanvasElement;
     this.context = this.canvas.getContext('2d');
   }
 
   /** Initialize view */
   init() {
-    this.model.init(undefined, undefined);
+    this.model.init();
     this.sound = new Audio('./sound.wav');
     this.started = false;
     this.playing = false;
@@ -65,9 +64,7 @@ class PongerView {
     this.handleTouch();
   }
 
-  /**
-   * Handle turning volume on and off
-   */
+  /** Handle turning volume on and off */
   handleVolume() {
     const volumeOffBtn = document.getElementById('volume-off');
     const volumeOnBtn = document.getElementById('volume-on');
@@ -110,12 +107,12 @@ class PongerView {
 
   /**
    * Start a new game
-   * @param {string} mode - game mode: singleplayer of twoplayer
-   * @param {string} hash - id of the room to connect
+   * @param mode - game mode: singleplayer of twoplayer
+   * @param hash - id of the room to connect
    */
-  start(mode, hash) {
+  start(mode: string, hash: string) {
     this.model.init(mode, hash);
-    this.prevTime = new Date();
+    this.prevTime = Date.now();
     this.lastTouches = [];
 
     window.addEventListener('keydown', (event) => {
@@ -270,7 +267,7 @@ class PongerView {
       this.drawPausedInfo();
     }
 
-    this.prevTime = new Date();
+    this.prevTime = Date.now();
   }
 
   /** Draw dashed half-way line */
@@ -293,7 +290,7 @@ class PongerView {
 
     this.context.textAlign = 'right';
     this.context.fillText(
-      this.model.points ? this.model.points[0] : 0,
+      String(this.model.points ? this.model.points[0] : 0),
       (this.canvas.width / 2) - (this.canvas.width * 0.02),
       this.canvas.width * 0.02,
     );
@@ -301,7 +298,7 @@ class PongerView {
     this.context.fillStyle = 'rgba(255, 255, 255, .3)';
     this.context.textAlign = 'left';
     this.context.fillText(
-      this.model.points ? this.model.points[1] : 0,
+      String(this.model.points ? this.model.points[1] : 0),
       (this.canvas.width / 2) + (this.canvas.width * 0.02),
       this.canvas.width * 0.02,
     );
@@ -321,13 +318,13 @@ class PongerView {
 
   /**
    * Draw a bat
-   * @param {Object} bat
-   * @param {number} bat.x - X position
-   * @param {number} bat.y - Y position
-   * @param {number} bat.w - abstract width
-   * @param {number} bat.h - abstract height
+   * @param bat
+   * @param bat.x - X position
+   * @param bat.y - Y position
+   * @param bat.w - abstract width
+   * @param bat.h - abstract height
    */
-  drawBat(bat) {
+  drawBat(bat: { x: number, y: number, w: number, h: number }) {
     this.context.fillStyle = 'white';
     this.context.fillRect(
       (bat.x - (bat.w / 2)) / this.model.abstractWidth * this.canvas.width,
@@ -360,11 +357,8 @@ class PongerView {
     );
   }
 
-  /**
-   * Return info text about current state
-   * @return {string}
-   */
-  getInfoText() {
+  /** Return info text about current state */
+  getInfoText() : string {
     switch (this.model.state) {
       case this.model.states.CONNECTING: return 'Connecting...';
       case this.model.states.CONNECTION_FAILED: return 'Connection failed.';
