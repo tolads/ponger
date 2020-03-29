@@ -2,9 +2,9 @@ import * as io from 'socket.io-client';
 
 import { AbstractBat, PlayerBat, ComputerBat } from './bat';
 
-let EventEmitter; // tslint:disable-line:variable-name
+let EventEmitter;
 if (typeof window === 'undefined') {
-  EventEmitter = require('events');
+  EventEmitter = require('events'); // eslint-disable-line global-require
 }
 
 export enum States {
@@ -31,7 +31,7 @@ export default class PongerModel {
   disconnectedEvent: CustomEvent;
   collisionEvent: CustomEvent;
   eventEmitter: any;
-  ball: {x: number, y: number, v: number, r: number, dir: number};
+  ball: { x: number, y: number, v: number, r: number, dir: number };
   leftBat: AbstractBat;
   rightBat: AbstractBat;
   keys: Set<number>;
@@ -47,10 +47,10 @@ export default class PongerModel {
     this.coefficient = 1e-4;
 
     if (typeof window !== 'undefined') {
-      this.openRoomEvent = new CustomEvent('open_room');
-      this.playingOnlineEvent = new CustomEvent('playing_online');
-      this.disconnectedEvent = new CustomEvent('disconnected');
-      this.collisionEvent = new CustomEvent('collision');
+      this.openRoomEvent = new CustomEvent('open_room'); // eslint-disable-line no-undef
+      this.playingOnlineEvent = new CustomEvent('playing_online'); // eslint-disable-line no-undef
+      this.disconnectedEvent = new CustomEvent('disconnected'); // eslint-disable-line no-undef
+      this.collisionEvent = new CustomEvent('collision'); // eslint-disable-line no-undef
     } else {
       this.eventEmitter = new EventEmitter();
     }
@@ -256,11 +256,11 @@ export default class PongerModel {
       });
 
       if (bat.y - (bat.h / 2) < 0) {
-        bat.y = bat.h / 2;
+        bat.y = bat.h / 2; // eslint-disable-line no-param-reassign
       }
 
       if (bat.y + (bat.h / 2) > this.abstractHeight) {
-        bat.y = this.abstractHeight - (bat.h / 2);
+        bat.y = this.abstractHeight - (bat.h / 2); // eslint-disable-line no-param-reassign
       }
     });
   }

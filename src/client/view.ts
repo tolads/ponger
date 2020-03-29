@@ -25,7 +25,7 @@ class PongerView {
   /** Initialize view */
   init() {
     this.model.init();
-    this.sound = new Audio('./sound.wav');
+    this.sound = new Audio('./sound.wav'); // eslint-disable-line no-undef
     this.started = false;
     this.playing = false;
 
@@ -41,7 +41,7 @@ class PongerView {
 
       this.start('online', window.location.hash.substr(1));
 
-    // handle menu
+      // handle menu
     } else if (menu) {
       menu.classList.remove('hidden');
 
@@ -358,7 +358,7 @@ class PongerView {
   }
 
   /** Return info text about current state */
-  getInfoText() : string {
+  getInfoText(): string {
     switch (this.model.state) {
       case States.CONNECTING: return 'Connecting...';
       case States.CONNECTION_FAILED: return 'Connection failed.';

@@ -1,11 +1,11 @@
-/* tslint:disable:no-console */
-const http = require('http');
-const path = require('path');
-
+/* eslint-disable no-console */
 import * as express from 'express';
 import * as socketIO from 'socket.io';
 
 import PongerModel from '../shared/model';
+
+const http = require('http');
+const path = require('path');
 
 const app = express();
 const server = http.Server(app);
@@ -25,7 +25,7 @@ app.use(express.static(path.join(__dirname, '..', 'public')));
 
 server.listen(port, () => console.log(`Ponger app listening on port ${port}.`));
 
-const startedGames = new Map<string, {model: PongerModel, player1: string}>();
+const startedGames = new Map<string, { model: PongerModel, player1: string }>();
 
 /**
  * Main game loop body
@@ -55,7 +55,7 @@ const loopInner = (room: string, model: PongerModel, prevTime: number) => {
  * @param client - client who triggered the event
  */
 const moveBat = (event: string, client: SocketIO.Socket) => {
-  const room = Object.keys(client.rooms).find(element => element.startsWith('r_'));
+  const room = Object.keys(client.rooms).find((element) => element.startsWith('r_'));
 
   if (room) {
     const { model, player1 } = startedGames.get(room);
@@ -116,7 +116,7 @@ socketIOserver.on('connection', (client) => {
    * @listens start
    */
   client.on('start', () => {
-    const room = Object.keys(client.rooms).find(element => element.startsWith('r_'));
+    const room = Object.keys(client.rooms).find((element) => element.startsWith('r_'));
 
     console.log('Client', client.id, 'wants to start the game in room', room);
 
@@ -178,7 +178,7 @@ socketIOserver.on('connection', (client) => {
    * @listens disconnecting
    */
   client.on('disconnecting', () => {
-    const room = Object.keys(client.rooms).find(element => element.startsWith('r_'));
+    const room = Object.keys(client.rooms).find((element) => element.startsWith('r_'));
 
     console.log('Client', client.id, 'disconnected from room', room);
 

@@ -35,7 +35,7 @@ export class AbstractBat implements BatProperties {
    * Move the bat
    * @abstract
    */
-  move(undefined) {
+  move(undefined) { // eslint-disable-line class-methods-use-this, no-shadow-restricted-names
     throw new Error('Abstract method called!');
   }
 }
