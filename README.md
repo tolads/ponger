@@ -1,5 +1,12 @@
 # Ponger
 
-## Demo
+## Demo (without SocketIO server)
 
-- https://ponger.herokuapp.com
+- https://tolads.github.io/ponger/dist/public
+
+## Run locally
+
+```bash
+npm install
+npm run dev
+```

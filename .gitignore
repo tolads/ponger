@@ -2,8 +2,6 @@ node_modules
 .idea
 *.log
 /out/
-bundle.js*
 .vscode/
 /dist/*
-!/dist/cache.manifest
 !/dist/public
