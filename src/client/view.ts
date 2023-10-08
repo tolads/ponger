@@ -25,7 +25,7 @@ class PongerView {
   /** Initialize view */
   init() {
     this.model.init();
-    this.sound = new Audio('./sound.wav'); // eslint-disable-line no-undef
+    this.sound = new Audio('./sound.wav');
     this.started = false;
     this.playing = false;
 
@@ -311,7 +311,11 @@ class PongerView {
     this.context.arc(
       this.model.ball.x / this.model.abstractWidth * this.canvas.width,
       this.model.ball.y / this.model.abstractHeight * this.canvas.height,
-      this.canvas.width * this.model.ball.r / this.model.abstractWidth, 0, Math.PI * 2,
+      this.canvas.width * this.model.ball.r / this.model.abstractWidth,
+
+      0,
+
+      Math.PI * 2,
     );
     this.context.fill();
   }
@@ -377,10 +381,3 @@ const model = new PongerModel();
 const view = new PongerView(model);
 
 view.init();
-
-// Reload the page when Application Cache has updated
-if (window.applicationCache) {
-  window.applicationCache.addEventListener('updateready', () => {
-    window.location.reload();
-  });
-}

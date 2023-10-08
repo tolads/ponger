@@ -1,4 +1,4 @@
-import * as io from 'socket.io-client';
+import { io, Socket } from 'socket.io-client';
 
 import { AbstractBat, PlayerBat, ComputerBat } from './bat';
 
@@ -36,7 +36,7 @@ export default class PongerModel {
   rightBat: AbstractBat;
   keys: Set<number>;
   points: [number, number];
-  socket: SocketIOClient.Socket;
+  socket: Socket;
   roomId: string;
   opponentHasStarted: boolean;
 
@@ -47,10 +47,10 @@ export default class PongerModel {
     this.coefficient = 1e-4;
 
     if (typeof window !== 'undefined') {
-      this.openRoomEvent = new CustomEvent('open_room'); // eslint-disable-line no-undef
-      this.playingOnlineEvent = new CustomEvent('playing_online'); // eslint-disable-line no-undef
-      this.disconnectedEvent = new CustomEvent('disconnected'); // eslint-disable-line no-undef
-      this.collisionEvent = new CustomEvent('collision'); // eslint-disable-line no-undef
+      this.openRoomEvent = new CustomEvent('open_room');
+      this.playingOnlineEvent = new CustomEvent('playing_online');
+      this.disconnectedEvent = new CustomEvent('disconnected');
+      this.collisionEvent = new CustomEvent('collision');
     } else {
       this.eventEmitter = new EventEmitter();
     }

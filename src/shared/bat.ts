@@ -35,7 +35,12 @@ export class AbstractBat implements BatProperties {
    * Move the bat
    * @abstract
    */
-  move(undefined) { // eslint-disable-line class-methods-use-this, no-shadow-restricted-names
+  // eslint-disable-next-line class-methods-use-this
+  move(
+    params:
+      { dt: number, coefficient: number, keys: Set<number> } |
+      { dt: number, coefficient: number, ballY: number },
+  ) {
     throw new Error('Abstract method called!');
   }
 }

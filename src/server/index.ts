@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 import * as express from 'express';
-import * as socketIO from 'socket.io';
+import { Server, Socket } from 'socket.io';
 
 import PongerModel from '../shared/model';
 
@@ -9,17 +9,8 @@ const path = require('path');
 
 const app = express();
 const server = http.Server(app);
-const socketIOserver = socketIO(server);
+const socketIOserver = new Server(server);
 const port = process.env.PORT || 3002;
-
-app.get('/cache.manifest', (req, res) => {
-  res.setHeader('content-type', 'text/cache-manifest');
-  if (process.env.NODE_ENV === 'production') {
-    res.sendFile(path.join(__dirname, '..', 'cache.manifest'));
-  } else {
-    res.end(`CACHE MANIFEST\n# ${Date.now()}\nNETWORK:\n*\n`);
-  }
-});
 
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
@@ -54,8 +45,8 @@ const loopInner = (room: string, model: PongerModel, prevTime: number) => {
  * @param event - event triggered
  * @param client - client who triggered the event
  */
-const moveBat = (event: string, client: SocketIO.Socket) => {
-  const room = Object.keys(client.rooms).find((element) => element.startsWith('r_'));
+const moveBat = (event: string, client: Socket) => {
+  const room = [...client.rooms].find((element) => element.startsWith('r_'));
 
   if (room) {
     const { model, player1 } = startedGames.get(room);
@@ -79,7 +70,7 @@ socketIOserver.on('connection', (client) => {
   client.on('open_room', (name, fn) => {
     const room = `r_${client.id}`;
 
-    if (socketIOserver.sockets.adapter.rooms[room]) {
+    if (socketIOserver.sockets.adapter.rooms.get(room)) {
       console.log(`Client ${client.id} wanted to open room ${room}, but it is already open.`);
       fn({ ok: false, id: room });
       return;
@@ -96,8 +87,8 @@ socketIOserver.on('connection', (client) => {
    * @listens join_room
    */
   client.on('join_room', (room, fn) => {
-    if (socketIOserver.sockets.adapter.rooms[room]
-      && socketIOserver.sockets.adapter.rooms[room].length === 1) {
+    if (socketIOserver.sockets.adapter.rooms.get(room)
+      && socketIOserver.sockets.adapter.rooms.get(room).size === 1) {
       console.log('Client', client.id, 'joined room', room);
 
       client.join(room);
@@ -116,7 +107,7 @@ socketIOserver.on('connection', (client) => {
    * @listens start
    */
   client.on('start', () => {
-    const room = Object.keys(client.rooms).find((element) => element.startsWith('r_'));
+    const room = [...client.rooms].find((element) => element.startsWith('r_'));
 
     console.log('Client', client.id, 'wants to start the game in room', room);
 
@@ -178,7 +169,7 @@ socketIOserver.on('connection', (client) => {
    * @listens disconnecting
    */
   client.on('disconnecting', () => {
-    const room = Object.keys(client.rooms).find((element) => element.startsWith('r_'));
+    const room = [...client.rooms].find((element) => element.startsWith('r_'));
 
     console.log('Client', client.id, 'disconnected from room', room);
 

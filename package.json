@@ -4,9 +4,9 @@
   "description": "Pong game in JavaScript",
   "author": "Tamas Laszlo",
   "scripts": {
-    "lint": "eslint src/**/*.ts",
+    "lint": "eslint src --ext .ts",
     "start": "node ./dist/server/index.js",
-    "build-client": "cd ./src/client && webpack -p",
+    "build-client": "cd ./src/client && webpack",
     "dev-client": "cd ./src/client && webpack --watch",
     "build-server": "tsc -p ./src/server",
     "dev-server": "tsc-watch -p ./src/server --onSuccess \"node ./dist/server/index.js\"",
@@ -14,28 +14,26 @@
     "build": "concurrently --prefix \"[{name}]\" --names \"SERVER,CLIENT\" -c \"bgBlue.bold,bgGreen.bold\" \"npm run build-server\" \"npm run build-client\""
   },
   "dependencies": {
-    "express": "^4.17.1",
-    "socket.io": "^2.3.0",
-    "socket.io-client": "^2.3.0"
+    "express": "4.18.2",
+    "socket.io": "4.7.2",
+    "socket.io-client": "4.7.2"
   },
   "devDependencies": {
-    "@types/express": "^4.17.3",
-    "@types/node": "^13.9.5",
-    "@types/socket.io": "^2.1.4",
-    "@types/socket.io-client": "^1.4.32",
-    "@typescript-eslint/eslint-plugin": "^2.25.0",
-    "@typescript-eslint/parser": "^2.25.0",
-    "concurrently": "^5.1.0",
-    "eslint": "^6.8.0",
-    "eslint-config-airbnb": "^18.1.0",
-    "eslint-import-resolver-typescript": "^2.0.0",
-    "eslint-plugin-import": "^2.20.2",
-    "source-map-loader": "^0.2.4",
-    "ts-loader": "^6.2.2",
-    "tsc-watch": "^4.2.3",
-    "typescript": "^3.8.3",
-    "webpack": "^4.42.1",
-    "webpack-cli": "^3.3.11"
+    "@types/express": "4.17.18",
+    "@types/node": "20.8.3",
+    "@typescript-eslint/eslint-plugin": "6.7.4",
+    "@typescript-eslint/parser": "6.7.4",
+    "concurrently": "8.2.1",
+    "eslint": "8.50.0",
+    "eslint-config-airbnb": "19.0.4",
+    "eslint-import-resolver-typescript": "3.6.1",
+    "eslint-plugin-import": "2.28.1",
+    "source-map-loader": "4.0.1",
+    "ts-loader": "9.5.0",
+    "tsc-watch": "6.0.4",
+    "typescript": "5.2.2",
+    "webpack": "5.88.2",
+    "webpack-cli": "5.1.4"
   },
   "heroku-run-build-script": true
 }
